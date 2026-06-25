@@ -9,7 +9,7 @@ let lastResetDate = null;
 let tabs = {};
 
 const TIMEOUT_MS = 3000;
-const PASSWORD = 'aviator2025'; // ← CHANGE THIS TO YOUR PASSWORD
+const PASSWORD = 'Robz12072007'; // ← CHANGE THIS TO YOUR PASSWORD
 
 // Check and reset every Saturday
 function checkWeeklyReset() {
