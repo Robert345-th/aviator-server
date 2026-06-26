@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mwos/Bolabet Withdraw Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #f1f5f9; font-family: 'Inter', sans-serif; min-height: 100vh; }
@@ -56,20 +57,16 @@
 
   .content { padding: 16px; max-width: 600px; margin: 0 auto; }
 
-  /* Site hero */
   .site-hero { border-radius: 20px 20px 0 0; padding: 20px; color: #fff; }
   .site-hero.mwos { background: linear-gradient(135deg, #059669, #10b981); }
   .site-hero.bolabet { background: linear-gradient(135deg, #d97706, #f59e0b); }
   .site-name { font-size: 11px; font-weight: 800; letter-spacing: 3px; opacity: 0.8; margin-bottom: 12px; }
 
-  /* TODAY big */
   .today-label { font-size: 9px; letter-spacing: 3px; opacity: 0.6; margin-bottom: 4px; }
   .today-amount { font-size: 52px; font-weight: 900; line-height: 1; margin-bottom: 2px; }
   .today-currency { font-size: 11px; opacity: 0.6; margin-bottom: 14px; }
 
-  /* 2-col grid for week */
   .week-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  /* 2-col grid for month */
   .month-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
   .period-box { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; }
@@ -77,7 +74,6 @@
   .period-val { font-size: 20px; font-weight: 900; }
   .period-sub { font-size: 9px; opacity: 0.5; margin-top: 2px; }
 
-  /* Stats */
   .site-stats-card {
     background: #fff; border-radius: 0 0 16px 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -91,30 +87,87 @@
   .site-stat-val.green { color: #10b981; }
   .site-stat-val.yellow { color: #f59e0b; }
 
-  /* Feed Styling */
-  .feed-card {
-    background: #fff; border-radius: 16px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    margin-bottom: 16px; overflow: hidden;
+  /* ── LOW BALANCE ALERTS ── */
+  .alerts-section { margin-bottom: 20px; }
+
+  .reveal-btn {
+    width: 100%;
+    background: #1e293b; color: #fff; border: none;
+    padding: 14px 16px; border-radius: 12px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
   }
-  .feed-header { padding: 14px 16px; border-bottom: 1px solid #f8fafc; font-size: 12px; font-weight: 700; color: #ef4444; letter-spacing: 1px; }
-  .feed-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f8fafc; }
-  .feed-item:last-child { border-bottom: none; }
-  .feed-left { display: flex; align-items: center; gap: 10px; }
-  .feed-icon { font-size: 20px; }
-  .feed-tab { font-size: 13px; font-weight: 700; color: #1e293b; }
-  .feed-time { font-size: 11px; color: #94a3b8; }
-  .feed-right { text-align: right; }
-  .feed-amount { font-size: 13px; font-weight: 800; color: #ef4444; }
-  .feed-site { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; display: inline-block; margin-top: 2px; }
-  .feed-site.mwos { background: #fef2f2; color: #991b1b; }
-  .feed-site.bolabet { background: #fef3c7; color: #d97706; }
+  .reveal-btn:active { opacity: 0.85; }
 
-  /* Privacy Blurring Utilities */
-  .blurred-info { filter: blur(5px); transition: filter 0.2s; user-select: none; }
-  .revealed-info { filter: none; }
+  #alerts-panel { display: none; margin-top: 12px; }
 
-  .empty { padding: 30px; text-align: center; color: #cbd5e1; font-size: 13px; }
+  .hide-btn {
+    width: 100%;
+    background: #0f172a; color: #fff; border: none;
+    padding: 12px 16px; border-radius: 10px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .hide-btn:active { opacity: 0.85; }
+
+  .box-wrapper { margin-bottom: 16px; }
+
+  .box-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; background: #0f172a; border-radius: 14px 14px 0 0;
+  }
+  .box-title { font-size: 12px; font-weight: 800; color: #f1f5f9; letter-spacing: 2px; }
+  .box-count { font-size: 11px; font-weight: 700; background: #1e293b; color: #94a3b8; padding: 4px 10px; border-radius: 20px; }
+  .box-count.full { background: #ef4444; color: #fff; }
+
+  .box-body { background: #fff; border-radius: 0 0 14px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden; }
+
+  .account-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; border-bottom: 1px solid #f1f5f9; gap: 8px;
+  }
+  .account-row:last-child { border-bottom: none; }
+
+  .chips { display: flex; gap: 12px; flex: 1; }
+  .chip { background: #f1f5f9; border-radius: 8px; padding: 8px 14px; }
+  .chip-val { font-size: 13px; font-weight: 800; color: #0f172a; }
+  .chip-val.phone { font-family: monospace; font-size: 12px; font-weight: 600; }
+
+  .row-num { font-size: 12px; font-weight: 800; color: #94a3b8; min-width: 24px; text-align: right; }
+
+  .empty-alerts { padding: 24px; text-align: center; color: #cbd5e1; font-size: 13px;
+    background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+
+  .box-footer { display: flex; justify-content: space-between; padding: 10px 14px 14px; gap: 10px; }
+  .save-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    color: #fff; border: none; padding: 10px 0; border-radius: 10px;
+    font-size: 11px; font-weight: 700; cursor: pointer; flex: 1;
+  }
+  .save-btn.ids { background: #3b82f6; }
+  .save-btn.all { background: #10b981; }
+  .save-btn:active { opacity: 0.8; }
+
+  /* Hidden printable note */
+  .note-printable {
+    position: fixed; left: -9999px; top: 0; width: 400px;
+    background: #fff; padding: 32px 28px; font-family: 'Inter', sans-serif;
+  }
+  .note-title { font-size: 16px; font-weight: 900; color: #0f172a; margin-bottom: 4px; }
+  .note-date { font-size: 11px; color: #94a3b8; margin-bottom: 20px; }
+  .note-divider { border: none; border-top: 2px solid #e2e8f0; margin-bottom: 16px; }
+  .note-row {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #0f172a;
+  }
+  .note-row:last-child { border-bottom: none; }
+  .note-num { font-size: 11px; font-weight: 700; color: #94a3b8; min-width: 22px; text-align: right; }
+  .note-id { font-weight: 800; }
+  .note-sep { color: #cbd5e1; }
+  .note-phone { font-family: monospace; font-size: 12px; color: #334155; }
+  .note-footer { margin-top: 20px; font-size: 10px; color: #cbd5e1; text-align: center; }
+
   .bottom-space { height: 30px; }
 </style>
 </head>
@@ -149,7 +202,7 @@
 
   <div class="content">
 
-    <!-- MWOS HERO CARD -->
+    <!-- MWOS HERO -->
     <div class="site-hero mwos">
       <div class="site-name">MWOS</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -196,7 +249,7 @@
       </div>
     </div>
 
-    <!-- BOLABET HERO CARD -->
+    <!-- BOLABET HERO -->
     <div class="site-hero bolabet">
       <div class="site-name">BOLABET</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -243,26 +296,33 @@
       </div>
     </div>
 
-    <!-- LOW BALANCE ALERTS PANEL WITH PRIVACY TOGGLE BUTTON -->
-    <div style="text-align: right; margin-bottom: 8px;">
-      <button id="toggle-privacy-btn" onclick="toggleDashboardPrivacy()" style="background: #1e293b; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">👁️ View IDs / Numbers</button>
-    </div>
-
-    <div class="feed-card">
-      <div class="feed-header">⚠️ LOW BALANCE ACCOUNT ALERTS</div>
-      <div id="feed"><div class="empty">Waiting for low balance accounts...</div></div>
+    <!-- LOW BALANCE ALERTS -->
+    <div class="alerts-section">
+      <button class="reveal-btn" id="reveal-btn" onclick="showPanel()">👁️ View IDs & Numbers</button>
+      <div id="alerts-panel">
+        <button class="hide-btn" onclick="hidePanel()">🔒 Hide IDs & Numbers</button>
+        <div id="alerts-container"></div>
+      </div>
     </div>
 
     <div class="bottom-space"></div>
   </div>
 </div>
 
+<!-- Hidden printable note -->
+<div class="note-printable" id="note-printable">
+  <div class="note-title" id="note-title"></div>
+  <div class="note-date" id="note-date"></div>
+  <hr class="note-divider">
+  <div id="note-rows"></div>
+  <div class="note-footer">Mwos/Bolabet Withdraw Tracker</div>
+</div>
+
 <script>
+  const BOX_SIZE = 30;
   let isLoggedIn = sessionStorage.getItem('aviator_auth') === 'true';
-  let hideAccountDetails = true; // Tracks global blur visibility state
 
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
-  function timeStr(ts) { return new Date(ts).toTimeString().slice(0, 8); }
 
   function showDashboard() {
     document.getElementById('login-screen').style.display = 'none';
@@ -293,20 +353,120 @@
     input.type = input.type === 'password' ? 'text' : 'password';
   }
 
-  // Toggles the blur display state on the active ID string text items
-  function toggleDashboardPrivacy() {
-    hideAccountDetails = !hideAccountDetails;
-    const btn = document.getElementById('toggle-privacy-btn');
-    btn.textContent = hideAccountDetails ? '👁️ View IDs / Numbers' : '🔒 Hide IDs / Numbers';
-    
-    const elements = document.querySelectorAll('.account-detail-text');
-    elements.forEach(el => {
-      if (hideAccountDetails) {
-        el.classList.add('blurred-info');
-      } else {
-        el.classList.remove('blurred-info');
-      }
+  function showPanel() {
+    document.getElementById('reveal-btn').style.display = 'none';
+    document.getElementById('alerts-panel').style.display = 'block';
+  }
+
+  function hidePanel() {
+    document.getElementById('alerts-panel').style.display = 'none';
+    document.getElementById('reveal-btn').style.display = 'flex';
+  }
+
+  function parseTabId(tabId) {
+    const match = tabId.match(/ID:\s*(\S+)\s*\(([^)]+)\)/);
+    if (match) return { id: match[1], phone: match[2] };
+    return { id: tabId, phone: '—' };
+  }
+
+  function nowStr() {
+    return new Date().toLocaleString('en-GB', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
     });
+  }
+
+  function renderNote(title, rows) {
+    document.getElementById('note-title').textContent = title;
+    document.getElementById('note-date').textContent = nowStr();
+    document.getElementById('note-rows').innerHTML = rows;
+  }
+
+  function downloadImage(filename) {
+    const el = document.getElementById('note-printable');
+    html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  }
+
+  function saveIds(boxIndex, accounts) {
+    renderNote(
+      `BOX ${boxIndex + 1} — IDs (${accounts.length}/${BOX_SIZE} FULL)`,
+      accounts.map((c, i) => {
+        const { id } = parseTabId(c.tabId);
+        return `<div class="note-row"><span class="note-num">${i + 1}.</span><span class="note-id">${id}</span></div>`;
+      }).join('')
+    );
+    downloadImage(`box-${boxIndex + 1}-ids.png`);
+  }
+
+  function saveAll(boxIndex, accounts) {
+    renderNote(
+      `BOX ${boxIndex + 1} — IDs & Numbers (${accounts.length}/${BOX_SIZE} FULL)`,
+      accounts.map((c, i) => {
+        const { id, phone } = parseTabId(c.tabId);
+        return `<div class="note-row"><span class="note-num">${i + 1}.</span><span class="note-id">${id}</span><span class="note-sep">|</span><span class="note-phone">${phone}</span></div>`;
+      }).join('')
+    );
+    downloadImage(`box-${boxIndex + 1}-all.png`);
+  }
+
+  function renderAlerts(alerts) {
+    const container = document.getElementById('alerts-container');
+    const alertFeeds = alerts.filter(c => c.tabId.startsWith('ID:'));
+
+    const uniqueAlerts = [];
+    const seenIds = new Set();
+    alertFeeds.forEach(c => {
+      if (!seenIds.has(c.tabId)) { seenIds.add(c.tabId); uniqueAlerts.push(c); }
+    });
+
+    if (uniqueAlerts.length === 0) {
+      container.innerHTML = '<div class="empty-alerts">Waiting for low balance accounts...</div>';
+      window._boxes = [];
+      return;
+    }
+
+    const boxes = [];
+    for (let i = 0; i < uniqueAlerts.length; i += BOX_SIZE) {
+      boxes.push(uniqueAlerts.slice(i, i + BOX_SIZE));
+    }
+    window._boxes = boxes;
+
+    container.innerHTML = boxes.map((box, boxIndex) => {
+      const isFull = box.length >= BOX_SIZE;
+
+      const rows = box.map((c, rowIdx) => {
+        const { id, phone } = parseTabId(c.tabId);
+        return `
+          <div class="account-row">
+            <div class="chips">
+              <div class="chip"><div class="chip-val">${id}</div></div>
+              <div class="chip"><div class="chip-val phone">${phone}</div></div>
+            </div>
+            <div class="row-num">${rowIdx + 1}</div>
+          </div>`;
+      }).join('');
+
+      const saveButtons = isFull ? `
+        <div class="box-footer">
+          <button class="save-btn ids" onclick="saveIds(${boxIndex}, window._boxes[${boxIndex}])">💾 Save IDs</button>
+          <button class="save-btn all" onclick="saveAll(${boxIndex}, window._boxes[${boxIndex}])">💾 Save IDs & Numbers</button>
+        </div>` : '';
+
+      return `
+        <div class="box-wrapper">
+          <div class="box-header">
+            <div class="box-title">⚠️ BOX ${boxIndex + 1}</div>
+            <div class="box-count ${isFull ? 'full' : ''}">${box.length} / ${BOX_SIZE}${isFull ? ' • FULL' : ''}</div>
+          </div>
+          <div class="box-body">${rows}</div>
+          ${saveButtons}
+        </div>`;
+    }).join('');
   }
 
   if (isLoggedIn) showDashboard();
@@ -317,80 +477,18 @@
       const res = await fetch('/state');
       const { totals, cashouts, tabs } = await res.json();
 
-      // Separate clean statistics channels (Hides alert identifiers entirely from core cashout computations)
       const mwosTabs = Object.entries(tabs).filter(([,t]) => t.site !== 'bolabet');
       const bolabtTabs = Object.entries(tabs).filter(([,t]) => t.site === 'bolabet');
       const mwosCashouts = cashouts.filter(c => c.site !== 'bolabet' && !c.tabId.startsWith('ID:'));
       const bolabtCashouts = cashouts.filter(c => c.site === 'bolabet' && !c.tabId.startsWith('ID:'));
-      
-      const mwosAvg = mwosCashouts.length > 0 ? Math.round(totals.mwos.today / mwosCashouts.filter(c => {
+
+      const mwosAvg = mwosCashouts.length > 0 ? Math.round(totals.mwos.today / (mwosCashouts.filter(c => {
         const d = new Date(c.timestamp); const now = new Date();
         return d.toDateString() === now.toDateString();
-      }).length || 1) : 0;
-      const bolabtAvg = bolabtCashouts.length > 0 ? Math.round(totals.bolabet.today / bolabtCashouts.filter(c => {
+      }).length || 1)) : 0;
+      const bolabtAvg = bolabtCashouts.length > 0 ? Math.round(totals.bolabet.today / (bolabtCashouts.filter(c => {
         const d = new Date(c.timestamp); const now = new Date();
         return d.toDateString() === now.toDateString();
-      }).length || 1) : 0;
+      }).length || 1)) : 0;
 
-      // Update core site metric UI elements
-      document.getElementById('mwos-today').textContent = fmt(totals.mwos.today);
-      document.getElementById('mwos-this-week').textContent = fmt(totals.mwos.thisWeek);
-      document.getElementById('mwos-last-week').textContent = fmt(totals.mwos.lastWeek || 0);
-      document.getElementById('mwos-this-month').textContent = fmt(totals.mwos.thisMonth);
-      document.getElementById('mwos-last-month').textContent = fmt(totals.mwos.lastMonth || 0);
-      document.getElementById('mwos-cashouts').textContent = mwosCashouts.length;
-      document.getElementById('mwos-tabs').textContent = mwosTabs.length;
-      document.getElementById('mwos-avg').textContent = fmt(mwosAvg);
-
-      document.getElementById('bolabet-today').textContent = fmt(totals.bolabet.today);
-      document.getElementById('bolabet-this-week').textContent = fmt(totals.bolabet.thisWeek);
-      document.getElementById('bolabet-last-week').textContent = fmt(totals.bolabet.lastWeek || 0);
-      document.getElementById('bolabet-this-month').textContent = fmt(totals.bolabet.thisMonth);
-      document.getElementById('bolabet-last-month').textContent = fmt(totals.bolabet.lastMonth || 0);
-      document.getElementById('bolabet-cashouts').textContent = bolabtCashouts.length;
-      document.getElementById('bolabet-tabs').textContent = bolabtTabs.length;
-      document.getElementById('bolabet-avg').textContent = fmt(bolabtAvg);
-
-      // --- ACCOUNT MONITOR FILTERING SECTION ---
-      // 1. Isolate only custom payload IDs originating from your monitor
-      const alertFeeds = cashouts.filter(c => c.tabId.startsWith('ID:'));
-      
-      // 2. High-speed de-duplication loop. Drops repeating items instantly, retaining only the single latest log.
-      const uniqueAlerts = [];
-      const seenIds = new Set();
-      
-      alertFeeds.forEach(c => {
-        if (!seenIds.has(c.tabId)) {
-          seenIds.add(c.tabId);
-          uniqueAlerts.push(c);
-        }
-      });
-
-      const feedEl = document.getElementById('feed');
-      
-      if (uniqueAlerts.length === 0) {
-        feedEl.innerHTML = '<div class="empty">Waiting for low balance accounts...</div>';
-      } else {
-        // Render out only clean rows into your lower alerts dashboard module
-        feedEl.innerHTML = uniqueAlerts.slice(0, 30).map(c => `
-          <div class="feed-item">
-            <div class="feed-left">
-              <div class="feed-icon">🚨</div>
-              <div>
-                <!-- Text elements feature the dynamic class checking state below to stay securely blurred or visible -->
-                <div class="feed-tab account-detail-text ${hideAccountDetails ? 'blurred-info' : ''}">${c.tabId}</div>
-                <div class="feed-time">${timeStr(c.timestamp)}</div>
-              </div>
-            </div>
-            <div class="feed-right">
-              <div class="feed-amount">LOW FUNDS</div>
-              <span class="feed-site ${c.site === 'bolabet' ? 'bolabet' : 'mwos'}">${c.site === 'bolabet' ? 'BOLABET' : 'MWOS'}</span>
-            </div>
-          </div>`).join('');
-      }
-    } catch(e) {}
-    setTimeout(poll, 1000);
-  }
-</script>
-</body>
-       </html>
+     
