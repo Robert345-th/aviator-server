@@ -91,40 +91,65 @@
   .site-stat-val.green { color: #10b981; }
   .site-stat-val.yellow { color: #f59e0b; }
 
-  /* Feed Styling */
+  /* Premium Orange "Good Life" Theme Feed Box Layout */
   .feed-card {
-    background: #fff; border-radius: 16px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    background: #fff; border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(217, 119, 6, 0.08);
     margin-bottom: 16px; overflow: hidden;
+    border: 1px solid rgba(217, 119, 6, 0.15);
   }
   .feed-header { 
-    padding: 14px 16px; 
-    border-bottom: 1px solid #f8fafc; 
-    font-size: 12px; 
-    font-weight: 700; 
-    color: #ef4444; 
+    background: linear-gradient(135deg, #ea580c, #f97316); 
+    padding: 16px 20px; 
+    font-size: 13px; 
+    font-weight: 800; 
+    color: #fff; 
     letter-spacing: 1px;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  .feed-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f8fafc; }
+  .feed-download-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .feed-download-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  /* Split Columns Setup inside the Item Layout */
+  .feed-item { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 12px; 
+    padding: 14px 20px; 
+    border-bottom: 1px solid #f1f5f9; 
+    align-items: center;
+  }
   .feed-item:last-child { border-bottom: none; }
-  .feed-left { display: flex; align-items: center; gap: 10px; }
-  .feed-icon { font-size: 20px; }
+  
+  .column-part { display: flex; flex-direction: column; gap: 2px; }
+  .part-title { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; text-transform: uppercase; }
+  
   .feed-tab { font-size: 13px; font-weight: 700; color: #1e293b; }
-  .feed-time { font-size: 11px; color: #94a3b8; }
-  .feed-right { text-align: right; }
-  .feed-amount { font-size: 13px; font-weight: 800; color: #ef4444; }
-  .feed-site { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; display: inline-block; margin-top: 2px; }
-  .feed-site.mwos { background: #fef2f2; color: #991b1b; }
-  .feed-site.bolabet { background: #fef3c7; color: #d97706; }
+  .feed-time { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  
+  .feed-site { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 6px; display: inline-block; margin-top: 4px; width: max-content; }
+  .feed-site.mwos { background: #ecfdf5; color: #065f46; }
+  .feed-site.bolabet { background: #fef3c7; color: #92400e; }
 
   /* Privacy Blurring Utilities */
   .blurred-info { filter: blur(5px); transition: filter 0.2s; user-select: none; }
   .revealed-info { filter: none; }
 
-  .empty { padding: 30px; text-align: center; color: #cbd5e1; font-size: 13px; }
+  .empty { padding: 40px; text-align: center; color: #cbd5e1; font-size: 13px; font-weight: 500; }
   .bottom-space { height: 30px; }
 </style>
 </head>
@@ -255,8 +280,8 @@
 
     <div class="feed-card">
       <div class="feed-header">
-        <span>⚠️ LOW BALANCE ACCOUNT ALERTS</span>
-        <button onclick="downloadTableAsCSV()" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">📥 Download CSV</button>
+        <span>⚠️ LOW BALANCE ACCOUNT MONITOR</span>
+        <button class="feed-download-btn" onclick="downloadTableAsCSV()">📥 Download CSV</button>
       </div>
       <div id="feed"><div class="empty">Waiting for low balance accounts...</div></div>
     </div>
@@ -414,25 +439,38 @@
       if (uniqueAlerts.length === 0) {
         feedEl.innerHTML = '<div class="empty">Waiting for low balance accounts...</div>';
       } else {
-        // Render out only clean rows into your lower alerts dashboard module
-        feedEl.innerHTML = uniqueAlerts.slice(0, 30).map(c => `
+        // Render out as two cleanly divided descriptive columns (IDs / Numbers)
+        feedEl.innerHTML = uniqueAlerts.slice(0, 30).map(c => {
+          let rawStr = c.tabId.replace('ID:', '').trim();
+          let idPart = "UNKNOWN";
+          let numPart = "NOT FOUND";
+
+          if (rawStr.includes('(') && rawStr.includes(')')) {
+            idPart = rawStr.split('(')[0].trim();
+            numPart = rawStr.slice(rawStr.indexOf('(') + 1, rawStr.indexOf(')')).trim();
+          } else {
+            idPart = rawStr;
+          }
+
+          return `
           <div class="feed-item">
-            <div class="feed-left">
-              <div class="feed-icon">🚨</div>
-              <div>
-                <div class="feed-tab account-detail-text ${hideAccountDetails ? 'blurred-info' : ''}">${c.tabId}</div>
-                <div class="feed-time">${timeStr(c.timestamp)}</div>
-              </div>
+            <div class="column-part">
+              <span class="part-title">🆔 Account ID</span>
+              <span class="feed-tab account-detail-text ${hideAccountDetails ? 'blurred-info' : ''}">${idPart}</span>
+              <span class="feed-time">⏱️ ${timeStr(c.timestamp)}</span>
             </div>
-            <div class="feed-right">
-              <div class="feed-amount">LOW FUNDS</div>
+            
+            <div class="column-part" style="align-items: flex-end; text-align: right;">
+              <span class="part-title">📞 Mobile Number</span>
+              <span class="feed-tab account-detail-text ${hideAccountDetails ? 'blurred-info' : ''}">${numPart}</span>
               <span class="feed-site ${c.site === 'bolabet' ? 'bolabet' : 'mwos'}">${c.site === 'bolabet' ? 'BOLABET' : 'MWOS'}</span>
             </div>
-          </div>`).join('');
+          </div>`;
+        }).join('');
       }
     } catch(e) {}
     setTimeout(poll, 1000);
   }
 </script>
 </body>
-       </html>
+</html>
