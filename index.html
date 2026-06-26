@@ -30,7 +30,7 @@
   .login-card button {
     width: 100%; padding: 14px; background: #10b981; color: #fff;
     border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer;
-    margin-top: 14px;
+    margin-top: 12px;
   }
   .login-error { color: #ef4444; font-size: 13px; margin-top: 12px; display: none; }
 
@@ -57,7 +57,6 @@
 
   .content { padding: 16px; max-width: 600px; margin: 0 auto; }
 
-  /* Site hero layouts */
   .site-hero { border-radius: 20px 20px 0 0; padding: 20px; color: #fff; }
   .site-hero.mwos { background: linear-gradient(135deg, #059669, #10b981); }
   .site-hero.bolabet { background: linear-gradient(135deg, #d97706, #f59e0b); }
@@ -121,6 +120,7 @@
     background: rgba(255, 255, 255, 0.35);
   }
 
+  /* Two separate item data sides layout requested */
   .feed-item { 
     display: grid; 
     grid-template-columns: 1fr 1fr; 
@@ -141,10 +141,13 @@
   .feed-site.mwos { background: #ecfdf5; color: #065f46; }
   .feed-site.bolabet { background: #fef3c7; color: #92400e; }
 
+  .blurred-info { filter: blur(5px); transition: filter 0.2s; user-select: none; }
+  .revealed-info { filter: none; }
+
   .empty { padding: 40px; text-align: center; color: #cbd5e1; font-size: 13px; font-weight: 500; }
   .bottom-space { height: 30px; }
 
-  /* Left/Right Privacy Display Selectors */
+  /* Privacy Separator Selectors styling matches view layout */
   .privacy-row-split {
     display: flex;
     justify-content: space-between;
@@ -170,7 +173,6 @@
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-card">
     <h2>✈️ Mwos/Bolabet Withdraw Tracker</h2>
@@ -184,7 +186,6 @@
   </div>
 </div>
 
-<!-- MAIN DASHBOARD SCREEN -->
 <div id="main-screen">
   <div class="topbar">
     <div>
@@ -199,7 +200,6 @@
 
   <div class="content">
 
-    <!-- MWOS HERO CARD -->
     <div class="site-hero mwos">
       <div class="site-name">MWOS</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -246,7 +246,6 @@
       </div>
     </div>
 
-    <!-- BOLABET HERO CARD -->
     <div class="site-hero bolabet">
       <div class="site-name">BOLABET</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -293,13 +292,11 @@
       </div>
     </div>
 
-    <!-- VIEW TARGETS TOGGLE BAR -->
     <div class="privacy-row-split">
       <button id="toggle-id-btn" class="privacy-split-btn btn-left-side" onclick="toggleIdPrivacy()">👁️ View IDs Only</button>
       <button id="toggle-num-btn" class="privacy-split-btn btn-right-side" onclick="toggleNumPrivacy()">📞 View Numbers Only</button>
     </div>
 
-    <!-- ORANGE TRACKING OVERVIEW COMPONENT -->
     <div class="feed-card">
       <div class="feed-header">
         <span>⚠️ LOW BALANCE MONITOR</span>
@@ -341,7 +338,7 @@
     })
     .then(r => r.json())
     .then(d => {
-      if (d.ok) { 
+      if (d.ok || d.success) { 
         sessionStorage.setItem('aviator_auth', 'true'); 
         isLoggedIn = true; 
         showDashboard(); 
@@ -356,8 +353,7 @@
   }
 
   function logout() {
-    sessionStorage.removeItem('aviator_auth'); 
-    isLoggedIn = false;
+    sessionStorage.removeItem('aviator_auth'); isLoggedIn = false;
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('main-screen').style.display = 'none';
     document.getElementById('password-input').value = '';
@@ -491,4 +487,5 @@
           let numPart = "NOT FOUND";
 
           if (rawStr.includes('(') && rawStr.includes(')')) {
-            idPart = rawStr.split('(')[0].tr
+            idPart = rawStr.split('(')[0].trim();
+            numPa
