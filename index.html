@@ -243,7 +243,7 @@
         </div>
         <div class="period-box">
           <div class="period-label">LAST MONTH</div>
-          <div class="period-val" id="bolabet-last-month">0</div>
+          <div class="period-val" id="bolabet-last-week">0</div>
           <div class="period-sub">ZMW</div>
         </div>
       </div>
@@ -280,9 +280,10 @@
 <script>
   let isLoggedIn = sessionStorage.getItem('aviator_auth') === 'true';
   let revealedRows = new Set();
-  let currentRawAlertsList = []; // Holds data items for generating the CSV file accurately
+  let currentRawAlertsList = [];
 
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
+  function timeStr(ts) { return new Date(ts).toTimeString().slice(0, 8); }
 
   function showDashboard() {
     document.getElementById('login-screen').style.display = 'none';
@@ -313,7 +314,6 @@
     input.type = input.type === 'password' ? 'text' : 'password';
   }
 
-  // Row selection handler
   function handleRowViewToggle(rowUniqueKey) {
     if (revealedRows.has(rowUniqueKey)) {
       revealedRows.delete(rowUniqueKey);
@@ -340,14 +340,12 @@
     }
   }
 
-  // Generates and drops a download attachment file containing the complete unique dataset
   function downloadTableAsCSV() {
     if (currentRawAlertsList.length === 0) {
       alert("No data available to download yet.");
       return;
     }
 
-    // Prepare proper tabular rows headings
     let csvContent = "data:text/csv;charset=utf-8,NUMBER,ID,SITE,TIME\n";
 
     currentRawAlertsList.forEach(c => {
@@ -397,7 +395,6 @@
         return d.toDateString() === now.toDateString();
       }).length || 1) : 0;
 
-      // Update counters
       document.getElementById('mwos-today').textContent = fmt(totals.mwos.today);
       document.getElementById('mwos-this-week').textContent = fmt(totals.mwos.thisWeek);
       document.getElementById('mwos-last-week').textContent = fmt(totals.mwos.lastWeek || 0);
@@ -416,7 +413,6 @@
       document.getElementById('bolabet-tabs').textContent = bolabtTabs.length;
       document.getElementById('bolabet-avg').textContent = fmt(bolabtAvg);
 
-      // --- ACCOUNT STRIPPING SECTION ---
       const alertFeeds = cashouts.filter(c => c.tabId.startsWith('ID:'));
       
       const uniqueAlerts = [];
@@ -429,13 +425,12 @@
         }
       });
 
-      currentRawAlertsList = uniqueAlerts; // Save reference for downloader tracking
+      currentRawAlertsList = uniqueAlerts;
       const containerEl = document.getElementById('feed-container');
       
       if (uniqueAlerts.length === 0) {
         containerEl.innerHTML = '<div class="empty">Waiting for low balance accounts...</div>';
       } else {
-        // Build clean table configuration
         let tableHtml = `
           <table class="warning-table">
             <thead>
@@ -478,4 +473,14 @@
               </td>
               <td>
                 <div id="id-${key}" class="hidden-cell-data ${isRevealed ? 'revealed-cell-data' : ''}">
-                  ${id
+                  ${idPart}
+                </div>
+              </td>
+              <td>
+                <span class="site-row-tag ${c.site === 'bolabet' ? 'bolabet' : 'mwos'}">${c.site === 'bolabet' ? 'BOLA' : 'MWOS'}</span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+        
+        tableH
