@@ -151,7 +151,10 @@
       <div class="site-stat"><div class="site-stat-label">AVG / WIN</div><div class="site-stat-val" id="bolabet-avg">0</div></div>
     </div>
     <div class="alerts-section">
-      <button class="reveal-btn" id="reveal-btn" onclick="showPanel()">👁️ View IDs &amp; Numbers</button>
+      <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+        <button class="reveal-btn" id="reveal-btn" onclick="showPanel()">👁️ View IDs &amp; Numbers</button>
+        <button class="reveal-btn" style="background: #ef4444; width: auto; padding: 14px 20px;" onclick="triggerDepositClear()">🔄 Deposit / Clear</button>
+      </div>
       <div id="alerts-panel">
         <button class="hide-btn" onclick="hidePanel()">🔒 Hide IDs &amp; Numbers</button>
         <div id="alerts-container"></div>
@@ -166,7 +169,8 @@
   <hr class="note-divider">
   <div id="note-rows"></div>
   <div class="note-footer">Mwos/Bolabet Withdraw Tracker</div>
-</div><script>
+</div>
+<script>
   const BOX_SIZE = 30;
   let isLoggedIn = sessionStorage.getItem('aviator_auth') === 'true';
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
@@ -241,6 +245,25 @@
       }).join(''));
     downloadImage('box-' + (boxIndex + 1) + '-all.png');
   }
+
+  // Clear tracking channels from server using security PIN
+  function triggerDepositClear() {
+    const enteredCode = prompt("Enter system security PIN to clear tracked data channels:");
+    if (enteredCode === null) return;
+    
+    if (enteredCode === "1234") {
+      fetch('/clear-alerts', { method: 'POST' })
+      .then(() => {
+        window._boxes = [];
+        document.getElementById('alerts-container').innerHTML = '<div class="empty-alerts">Waiting for low balance accounts...</div>';
+        alert("Alert container completely cleared. Ready for fresh records!");
+      })
+      .catch(() => alert("Error: Communication failed. Core state untouched."));
+    } else {
+      alert("❌ Invalid PIN! Storage logs securely locked.");
+    }
+  }
+
   function renderAlerts(alerts) {
     var container = document.getElementById('alerts-container');
     var alertFeeds = alerts.filter(function(c) { return c.tabId.startsWith('ID:'); });
@@ -266,7 +289,9 @@
       return '<div class="box-wrapper"><div class="box-header"><div class="box-title">⚠️ BOX ' + (boxIndex + 1) + '</div><div class="box-count' + (isFull ? ' full' : '') + '">' + box.length + ' / ' + BOX_SIZE + (isFull ? ' • FULL' : '') + '</div></div><div class="box-body">' + rows + '</div>' + btns + '</div>';
     }).join('');
   }
+
   if (isLoggedIn) showDashboard();
+
   async function poll() {
     if (!isLoggedIn) return;
     try {
@@ -283,6 +308,7 @@
       var bolabtToday = bolabtCashouts.filter(function(c) { return new Date(c.timestamp).toDateString() === today; });
       var mwosAvg = mwosToday.length > 0 ? Math.round(totals.mwos.today / mwosToday.length) : 0;
       var bolabtAvg = bolabtToday.length > 0 ? Math.round(totals.bolabet.today / bolabtToday.length) : 0;
+      
       document.getElementById('mwos-today').textContent = fmt(totals.mwos.today);
       document.getElementById('mwos-this-week').textContent = fmt(totals.mwos.thisWeek);
       document.getElementById('mwos-last-week').textContent = fmt(totals.mwos.lastWeek || 0);
@@ -291,6 +317,7 @@
       document.getElementById('mwos-cashouts').textContent = mwosCashouts.length;
       document.getElementById('mwos-tabs').textContent = mwosTabs.length;
       document.getElementById('mwos-avg').textContent = fmt(mwosAvg);
+      
       document.getElementById('bolabet-today').textContent = fmt(totals.bolabet.today);
       document.getElementById('bolabet-this-week').textContent = fmt(totals.bolabet.thisWeek);
       document.getElementById('bolabet-last-week').textContent = fmt(totals.bolabet.lastWeek || 0);
@@ -299,11 +326,14 @@
       document.getElementById('bolabet-cashouts').textContent = bolabtCashouts.length;
       document.getElementById('bolabet-tabs').textContent = bolabtTabs.length;
       document.getElementById('bolabet-avg').textContent = fmt(bolabtAvg);
+      
       renderAlerts(cashouts);
-    } catch(e) {}
+
+    } catch(e) {
+      console.error("Polling system interface exception:", e);
+    }
     setTimeout(poll, 1000);
   }
 </script>
 </body>
 </html>
-
