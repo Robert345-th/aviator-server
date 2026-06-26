@@ -151,10 +151,34 @@
 
   .empty { padding: 40px; text-align: center; color: #cbd5e1; font-size: 13px; font-weight: 500; }
   .bottom-space { height: 30px; }
+
+  /* Separate Left/Right Privacy Row styling */
+  .privacy-row-split {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 12px;
+  }
+  .privacy-split-btn {
+    flex: 1;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: transform 0.1s;
+  }
+  .privacy-split-btn:active { transform: scale(0.98); }
+  .btn-left-side { background: #1e293b; color: #fff; text-align: left; }
+  .btn-right-side { background: #475569; color: #fff; text-align: right; }
 </style>
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-card">
     <h2>✈️ Mwos/Bolabet Withdraw Tracker</h2>
@@ -168,6 +192,7 @@
   </div>
 </div>
 
+<!-- MAIN DASHBOARD SCREEN -->
 <div id="main-screen">
   <div class="topbar">
     <div>
@@ -182,6 +207,7 @@
 
   <div class="content">
 
+    <!-- MWOS HERO CARD -->
     <div class="site-hero mwos">
       <div class="site-name">MWOS</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -228,6 +254,7 @@
       </div>
     </div>
 
+    <!-- BOLABET HERO CARD -->
     <div class="site-hero bolabet">
       <div class="site-name">BOLABET</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -274,14 +301,20 @@
       </div>
     </div>
 
-    <div style="text-align: right; margin-bottom: 8px;">
-      <button id="toggle-privacy-btn" onclick="toggleDashboardPrivacy()" style="background: #1e293b; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">👁️ View IDs / Numbers</button>
+    <!-- TWO SEPARATE VIEW TOGGLE BUTTONS (LEFT SIDE ID / RIGHT SIDE NUMBER) -->
+    <div class="privacy-row-split">
+      <button id="toggle-id-btn" class="privacy-split-btn btn-left-side" onclick="toggleIdPrivacy()">👁️ View IDs Only</button>
+      <button id="toggle-num-btn" class="privacy-split-btn btn-right-side" onclick="toggleNumPrivacy()">📞 View Numbers Only</button>
     </div>
 
+    <!-- RE-DESIGNED ORANGE BOX TWO-PART ALERTS CONTAINER WITH CLEAR DEPOSIT ACTION -->
     <div class="feed-card">
       <div class="feed-header">
-        <span>⚠️ LOW BALANCE ACCOUNT MONITOR</span>
-        <button class="feed-download-btn" onclick="downloadTableAsCSV()">📥 Download CSV</button>
+        <span>⚠️ LOW BALANCE MONITOR</span>
+        <div style="display: flex; gap: 8px;">
+          <button class="feed-download-btn" style="background: rgba(239, 68, 68, 0.4); border-color: rgba(255,255,255,0.3);" onclick="triggerDepositClear()">🔄 Deposit / Clear</button>
+          <button class="feed-download-btn" onclick="downloadTableAsCSV()">📥 Download CSV</button>
+        </div>
       </div>
       <div id="feed"><div class="empty">Waiting for low balance accounts...</div></div>
     </div>
@@ -292,8 +325,9 @@
 
 <script>
   let isLoggedIn = sessionStorage.getItem('aviator_auth') === 'true';
-  let hideAccountDetails = true; // Tracks global blur visibility state
-  let currentRawAlertsList = []; // Clean dataset storage for extraction array
+  let hideIds = true;
+  let hideNumbers = true;
+  let currentRawAlertsList = []; 
 
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
   function timeStr(ts) { return new Date(ts).toTimeString().slice(0, 8); }
@@ -327,22 +361,36 @@
     input.type = input.type === 'password' ? 'text' : 'password';
   }
 
-  // Toggles the blur display state on the active ID string text items
-  function toggleDashboardPrivacy() {
-    hideAccountDetails = !hideAccountDetails;
-    const btn = document.getElementById('toggle-privacy-btn');
-    btn.textContent = hideAccountDetails ? '👁️ View IDs / Numbers' : '🔒 Hide IDs / Numbers';
-    
-    const elements = document.querySelectorAll('.account-detail-text');
-    elements.forEach(el => {
-      if (hideAccountDetails) {
-        el.classList.add('blurred-info');
-      } else {
-        el.classList.remove('blurred-info');
-      }
-    });
+  // Split-logic visibility managers
+  function toggleIdPrivacy() {
+    hideIds = !hideIds;
+    document.getElementById('toggle-id-btn').textContent = hideIds ? '👁️ View IDs Only' : '🔒 Hide IDs Only';
+    document.querySelectorAll('.id-text-target').forEach(el => el.style.filter = hideIds ? 'blur(5px)' : 'none');
   }
 
+  function toggleNumPrivacy() {
+    hideNumbers = !hideNumbers;
+    document.getElementById('toggle-num-btn').textContent = hideNumbers ? '📞 View Numbers Only' : '🔒 Hide Numbers Only';
+    document.querySelectorAll('.num-text-target').forEach(el => el.style.filter = hideNumbers ? 'blur(5px)' : 'none');
+  }
+
+  // Clear tracking list from server backend using password protection
+  function triggerDepositClear() {
+    const enteredCode = prompt("Enter system security code to clear tracked data channels:");
+    if (enteredCode === null) return;
+    if (enteredCode === "1234") {
+      fetch('/clear-alerts', { method: 'POST' })
+      .then(() => {
+        currentRawAlertsList = [];
+        document.getElementById('feed').innerHTML = '<div class="empty">Waiting for low balance accounts...</div>';
+        alert("Alert container completely cleared. Ready for fresh records!");
+      }).catch(() => alert("Error communication failed. Core state untouched."));
+    } else {
+      alert("❌ Invalid password! Storage logs securely locked.");
+    }
+  }
+
+  // CSV Output Formatter adding absolute Excel string definitions
   function downloadTableAsCSV() {
     if (currentRawAlertsList.length === 0) {
       alert("No data available to download yet.");
@@ -364,7 +412,8 @@
       }
       
       let timeString = new Date(c.timestamp).toISOString().replace(',', '');
-      csvContent += `"${numPart}","${idPart}","${c.site.toUpperCase()}","${timeString}"\n`;
+      // Excel Force Text Format Rule
+      csvContent += `"'${numPart}","${idPart}","${c.site.toUpperCase()}","${timeString}"\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -384,7 +433,6 @@
       const res = await fetch('/state');
       const { totals, cashouts, tabs } = await res.json();
 
-      // Separate clean statistics channels (Hides alert identifiers entirely from core cashout computations)
       const mwosTabs = Object.entries(tabs).filter(([,t]) => t.site !== 'bolabet');
       const bolabtTabs = Object.entries(tabs).filter(([,t]) => t.site === 'bolabet');
       const mwosCashouts = cashouts.filter(c => c.site !== 'bolabet' && !c.tabId.startsWith('ID:'));
@@ -399,7 +447,6 @@
         return d.toDateString() === now.toDateString();
       }).length || 1) : 0;
 
-      // Update core site metric UI elements
       document.getElementById('mwos-today').textContent = fmt(totals.mwos.today);
       document.getElementById('mwos-this-week').textContent = fmt(totals.mwos.thisWeek);
       document.getElementById('mwos-last-week').textContent = fmt(totals.mwos.lastWeek || 0);
@@ -418,11 +465,7 @@
       document.getElementById('bolabet-tabs').textContent = bolabtTabs.length;
       document.getElementById('bolabet-avg').textContent = fmt(bolabtAvg);
 
-      // --- ACCOUNT MONITOR FILTERING SECTION ---
-      // 1. Isolate only custom payload IDs originating from your monitor
       const alertFeeds = cashouts.filter(c => c.tabId.startsWith('ID:'));
-      
-      // 2. High-speed de-duplication loop. Drops repeating items instantly, retaining only the single latest log.
       const uniqueAlerts = [];
       const seenIds = new Set();
       
@@ -436,41 +479,4 @@
       currentRawAlertsList = uniqueAlerts;
       const feedEl = document.getElementById('feed');
       
-      if (uniqueAlerts.length === 0) {
-        feedEl.innerHTML = '<div class="empty">Waiting for low balance accounts...</div>';
-      } else {
-        // Render out as two cleanly divided descriptive columns (IDs / Numbers)
-        feedEl.innerHTML = uniqueAlerts.slice(0, 30).map(c => {
-          let rawStr = c.tabId.replace('ID:', '').trim();
-          let idPart = "UNKNOWN";
-          let numPart = "NOT FOUND";
-
-          if (rawStr.includes('(') && rawStr.includes(')')) {
-            idPart = rawStr.split('(')[0].trim();
-            numPart = rawStr.slice(rawStr.indexOf('(') + 1, rawStr.indexOf(')')).trim();
-          } else {
-            idPart = rawStr;
-          }
-
-          return `
-          <div class="feed-item">
-            <div class="column-part">
-              <span class="part-title">🆔 Account ID</span>
-              <span class="feed-tab account-detail-text ${hideAccountDetails ? 'blurred-info' : ''}">${idPart}</span>
-              <span class="feed-time">⏱️ ${timeStr(c.timestamp)}</span>
-            </div>
-            
-            <div class="column-part" style="align-items: flex-end; text-align: right;">
-              <span class="part-title">📞 Mobile Number</span>
-              <span class="feed-tab account-detail-text ${hideAccountDetails ? 'blurred-info' : ''}">${numPart}</span>
-              <span class="feed-site ${c.site === 'bolabet' ? 'bolabet' : 'mwos'}">${c.site === 'bolabet' ? 'BOLABET' : 'MWOS'}</span>
-            </div>
-          </div>`;
-        }).join('');
-      }
-    } catch(e) {}
-    setTimeout(poll, 1000);
-  }
-</script>
-</body>
-</html>
+      if (uniqueAlerts
