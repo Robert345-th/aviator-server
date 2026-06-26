@@ -267,7 +267,8 @@
     if (enteredCode === "1234") {
       fetch('/clear-alerts', { method: 'POST' })
       .then(() => {
-        lastClearTimestamp = Date.now();
+        // Sets the baseline to zero so the page prints everything coming in instantly right after cleaning!
+        lastClearTimestamp = 0;
         window._boxes = [];
         document.getElementById('alerts-container').innerHTML = '<div class="empty-alerts">Waiting for low balance accounts...</div>';
         alert("Alert container completely cleared. Ready for fresh records!");
