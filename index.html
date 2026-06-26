@@ -56,13 +56,11 @@
 
   .content { padding: 16px; max-width: 600px; margin: 0 auto; }
 
-  /* Site heroes */
   .site-hero { border-radius: 20px 20px 0 0; padding: 20px; color: #fff; }
   .site-hero.mwos { background: linear-gradient(135deg, #059669, #10b981); }
   .site-hero.bolabet { background: linear-gradient(135deg, #d97706, #f59e0b); }
   .site-name { font-size: 11px; font-weight: 800; letter-spacing: 3px; opacity: 0.8; margin-bottom: 12px; }
 
-  /* Figures values */
   .today-label { font-size: 9px; letter-spacing: 3px; opacity: 0.6; margin-bottom: 4px; }
   .today-amount { font-size: 52px; font-weight: 900; line-height: 1; margin-bottom: 2px; }
   .today-currency { font-size: 11px; opacity: 0.6; margin-bottom: 14px; }
@@ -75,7 +73,6 @@
   .period-val { font-size: 20px; font-weight: 900; }
   .period-sub { font-size: 9px; opacity: 0.5; margin-top: 2px; }
 
-  /* Stats metrics */
   .site-stats-card {
     background: #fff; border-radius: 0 0 16px 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -89,7 +86,6 @@
   .site-stat-val.green { color: #10b981; }
   .site-stat-val.yellow { color: #f59e0b; }
 
-  /* Feed card container */
   .feed-card {
     background: #fff; border-radius: 16px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
@@ -107,7 +103,6 @@
     align-items: center;
   }
 
-  /* Export Button */
   .download-btn {
     background: #ef4444; color: #fff; border: none; padding: 6px 12px;
     border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
@@ -115,17 +110,14 @@
   }
   .download-btn:hover { background: #b91c1c; }
   
-  /* Table Layout rules */
   .warning-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
   .warning-table th { background: #f8fafc; color: #64748b; font-weight: 600; padding: 12px 16px; font-size: 11px; letter-spacing: 0.5px; }
   .warning-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
   .warning-table tr:last-child td { border-bottom: none; }
   
-  /* Mask configurations */
   .hidden-cell-data { filter: blur(6px); pointer-events: none; user-select: none; transition: filter 0.15s ease; color: #1e293b; font-weight: 700; }
   .revealed-cell-data { filter: none; pointer-events: auto; user-select: text; }
 
-  /* Action Triggers */
   .view-row-btn {
     background: #10b981; color: #fff; border: none; padding: 6px 12px; 
     border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
@@ -152,7 +144,7 @@
       <input type="password" id="password-input" placeholder="Password" onkeydown="if(event.key==='Enter')login()" style="margin-bottom:0;">
       <span onclick="togglePw()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px;user-select:none;">👁️</span>
     </div>
-    <button onclick="login()">Unlock</button>
+    <button id="unlock-submit-btn" onclick="login()">Unlock</button>
     <div class="login-error" id="login-error">❌ Wrong password</div>
   </div>
 </div>
@@ -243,7 +235,7 @@
         </div>
         <div class="period-box">
           <div class="period-label">LAST MONTH</div>
-          <div class="period-val" id="bolabet-last-week">0</div>
+          <div class="period-val" id="bolabet-last-month">0</div>
           <div class="period-sub">ZMW</div>
         </div>
       </div>
@@ -285,25 +277,40 @@
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
   function timeStr(ts) { return new Date(ts).toTimeString().slice(0, 8); }
 
+  function login() {
+    const pw = document.getElementById('password-input').value;
+    document.getElementById('login-error').style.display = 'none';
+
+    fetch('/login', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ password: pw }) 
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) { 
+        sessionStorage.setItem('aviator_auth', 'true'); 
+        isLoggedIn = true; 
+        showDashboard(); 
+      } else { 
+        document.getElementById('login-error').style.display = 'block'; 
+        document.getElementById('password-input').value = ''; 
+      }
+    })
+    .catch(() => { 
+      document.getElementById('login-error').style.display = 'block'; 
+    });
+  }
+
   function showDashboard() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('main-screen').style.display = 'block';
     poll();
   }
 
-  function login() {
-    const pw = document.getElementById('password-input').value;
-    fetch('/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) })
-    .then(r => r.json())
-    .then(d => {
-      if (d.ok) { sessionStorage.setItem('aviator_auth', 'true'); isLoggedIn = true; showDashboard(); }
-      else { document.getElementById('login-error').style.display = 'block'; document.getElementById('password-input').value = ''; }
-    })
-    .catch(() => { document.getElementById('login-error').style.display = 'block'; });
-  }
-
   function logout() {
-    sessionStorage.removeItem('aviator_auth'); isLoggedIn = false;
+    sessionStorage.removeItem('aviator_auth'); 
+    isLoggedIn = false;
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('main-screen').style.display = 'none';
     document.getElementById('password-input').value = '';
@@ -372,8 +379,6 @@
     downloadAnchor.click();
     document.body.removeChild(downloadAnchor);
   }
-
-  if (isLoggedIn) showDashboard();
 
   async function poll() {
     if (!isLoggedIn) return;
@@ -483,4 +488,6 @@
           `;
         }).join('');
         
-        tableH
+        tableHtml += `
+            </tbody>
+          </
