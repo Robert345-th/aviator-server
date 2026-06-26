@@ -215,6 +215,21 @@ Tab: ${tabId}`);
     return;
   }
 
+  // 3. PERMANENT CLEAR ROUTE (Deletes ID entries out of the SQL Postgres Database table)
+  if (req.method === 'POST' && req.url === '/clear-alerts') {
+    try {
+      await db.query("DELETE FROM cashouts WHERE tab_id LIKE 'ID:%'");
+      console.log('Database tracking records permanently deleted from Postgres.');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true }));
+    } catch (e) {
+      console.error(e);
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: "Failed to empty database rows" }));
+    }
+    return;
+  }
+
   if (req.method === 'GET' && req.url === '/state') {
     try {
       const now = Date.now();
