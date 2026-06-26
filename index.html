@@ -173,12 +173,16 @@
 <script>
   const BOX_SIZE = 30;
   let isLoggedIn = sessionStorage.getItem('aviator_auth') === 'true';
+  let lastClearTimestamp = 0;
+
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
+  
   function showDashboard() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('main-screen').style.display = 'block';
     poll();
   }
+  
   function login() {
     const pw = document.getElementById('password-input').value;
     fetch('/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) })
@@ -189,37 +193,45 @@
     })
     .catch(() => { document.getElementById('login-error').style.display = 'block'; });
   }
+  
   function logout() {
     sessionStorage.removeItem('aviator_auth'); isLoggedIn = false;
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('main-screen').style.display = 'none';
     document.getElementById('password-input').value = '';
   }
+  
   function togglePw() {
     const input = document.getElementById('password-input');
     input.type = input.type === 'password' ? 'text' : 'password';
   }
+  
   function showPanel() {
     document.getElementById('reveal-btn').style.display = 'none';
     document.getElementById('alerts-panel').style.display = 'block';
   }
+  
   function hidePanel() {
     document.getElementById('alerts-panel').style.display = 'none';
     document.getElementById('reveal-btn').style.display = 'flex';
   }
+  
   function parseTabId(tabId) {
     const match = tabId.match(/ID:\s*(\S+)\s*\(([^)]+)\)/);
     if (match) return { id: match[1], phone: match[2] };
     return { id: tabId, phone: '—' };
   }
+  
   function nowStr() {
     return new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
+  
   function renderNote(title, rows) {
     document.getElementById('note-title').textContent = title;
     document.getElementById('note-date').textContent = nowStr();
     document.getElementById('note-rows').innerHTML = rows;
   }
+  
   function downloadImage(filename) {
     const el = document.getElementById('note-printable');
     html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
@@ -229,6 +241,7 @@
       link.click();
     });
   }
+  
   function saveIds(boxIndex, accounts) {
     renderNote('BOX ' + (boxIndex + 1) + ' — IDs (' + accounts.length + '/' + BOX_SIZE + ' FULL)',
       accounts.map(function(c, i) {
@@ -237,6 +250,7 @@
       }).join(''));
     downloadImage('box-' + (boxIndex + 1) + '-ids.png');
   }
+  
   function saveAll(boxIndex, accounts) {
     renderNote('BOX ' + (boxIndex + 1) + ' — IDs & Numbers (' + accounts.length + '/' + BOX_SIZE + ' FULL)',
       accounts.map(function(c, i) {
@@ -246,7 +260,6 @@
     downloadImage('box-' + (boxIndex + 1) + '-all.png');
   }
 
-  // Clear tracking channels from server using security PIN
   function triggerDepositClear() {
     const enteredCode = prompt("Enter system security PIN to clear tracked data channels:");
     if (enteredCode === null) return;
@@ -254,6 +267,7 @@
     if (enteredCode === "1234") {
       fetch('/clear-alerts', { method: 'POST' })
       .then(() => {
+        lastClearTimestamp = Date.now();
         window._boxes = [];
         document.getElementById('alerts-container').innerHTML = '<div class="empty-alerts">Waiting for low balance accounts...</div>';
         alert("Alert container completely cleared. Ready for fresh records!");
@@ -327,7 +341,11 @@
       document.getElementById('bolabet-tabs').textContent = bolabtTabs.length;
       document.getElementById('bolabet-avg').textContent = fmt(bolabtAvg);
       
-      renderAlerts(cashouts);
+      var freshAlerts = cashouts.filter(function(c) {
+        return new Date(c.timestamp).getTime() > lastClearTimestamp;
+      });
+      
+      renderAlerts(freshAlerts);
 
     } catch(e) {
       console.error("Polling system interface exception:", e);
