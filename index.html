@@ -91,24 +91,28 @@
   .site-stat-val.green { color: #10b981; }
   .site-stat-val.yellow { color: #f59e0b; }
 
-  /* Feed */
+  /* Feed Styling */
   .feed-card {
     background: #fff; border-radius: 16px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     margin-bottom: 16px; overflow: hidden;
   }
-  .feed-header { padding: 14px 16px; border-bottom: 1px solid #f8fafc; font-size: 12px; font-weight: 700; color: #64748b; letter-spacing: 1px; }
+  .feed-header { padding: 14px 16px; border-bottom: 1px solid #f8fafc; font-size: 12px; font-weight: 700; color: #ef4444; letter-spacing: 1px; }
   .feed-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f8fafc; }
   .feed-item:last-child { border-bottom: none; }
   .feed-left { display: flex; align-items: center; gap: 10px; }
   .feed-icon { font-size: 20px; }
-  .feed-tab { font-size: 13px; font-weight: 600; color: #0f172a; }
+  .feed-tab { font-size: 13px; font-weight: 700; color: #1e293b; }
   .feed-time { font-size: 11px; color: #94a3b8; }
   .feed-right { text-align: right; }
-  .feed-amount { font-size: 14px; font-weight: 800; color: #10b981; }
+  .feed-amount { font-size: 13px; font-weight: 800; color: #ef4444; }
   .feed-site { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; display: inline-block; margin-top: 2px; }
-  .feed-site.mwos { background: #ecfdf5; color: #059669; }
+  .feed-site.mwos { background: #fef2f2; color: #991b1b; }
   .feed-site.bolabet { background: #fef3c7; color: #d97706; }
+
+  /* Privacy Blurring Utilities */
+  .blurred-info { filter: blur(5px); transition: filter 0.2s; user-select: none; }
+  .revealed-info { filter: none; }
 
   .empty { padding: 30px; text-align: center; color: #cbd5e1; font-size: 13px; }
   .bottom-space { height: 30px; }
@@ -116,7 +120,7 @@
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-card">
     <h2>✈️ Mwos/Bolabet Withdraw Tracker</h2>
@@ -130,7 +134,7 @@
   </div>
 </div>
 
-<!-- MAIN -->
+<!-- MAIN DASHBOARD SCREEN -->
 <div id="main-screen">
   <div class="topbar">
     <div>
@@ -145,7 +149,7 @@
 
   <div class="content">
 
-    <!-- MWOS -->
+    <!-- MWOS HERO CARD -->
     <div class="site-hero mwos">
       <div class="site-name">MWOS</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -192,7 +196,7 @@
       </div>
     </div>
 
-    <!-- BOLABET -->
+    <!-- BOLABET HERO CARD -->
     <div class="site-hero bolabet">
       <div class="site-name">BOLABET</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -239,10 +243,14 @@
       </div>
     </div>
 
-    <!-- FEED -->
+    <!-- LOW BALANCE ALERTS PANEL WITH PRIVACY TOGGLE BUTTON -->
+    <div style="text-align: right; margin-bottom: 8px;">
+      <button id="toggle-privacy-btn" onclick="toggleDashboardPrivacy()" style="background: #1e293b; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">👁️ View IDs / Numbers</button>
+    </div>
+
     <div class="feed-card">
-      <div class="feed-header">CASHOUT FEED</div>
-      <div id="feed"><div class="empty">Waiting for cashouts...</div></div>
+      <div class="feed-header">⚠️ LOW BALANCE ACCOUNT ALERTS</div>
+      <div id="feed"><div class="empty">Waiting for low balance accounts...</div></div>
     </div>
 
     <div class="bottom-space"></div>
@@ -251,6 +259,8 @@
 
 <script>
   let isLoggedIn = sessionStorage.getItem('aviator_auth') === 'true';
+  let hideAccountDetails = true; // Tracks global blur visibility state
+
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
   function timeStr(ts) { return new Date(ts).toTimeString().slice(0, 8); }
 
@@ -283,6 +293,22 @@
     input.type = input.type === 'password' ? 'text' : 'password';
   }
 
+  // Toggles the blur display state on the active ID string text items
+  function toggleDashboardPrivacy() {
+    hideAccountDetails = !hideAccountDetails;
+    const btn = document.getElementById('toggle-privacy-btn');
+    btn.textContent = hideAccountDetails ? '👁️ View IDs / Numbers' : '🔒 Hide IDs / Numbers';
+    
+    const elements = document.querySelectorAll('.account-detail-text');
+    elements.forEach(el => {
+      if (hideAccountDetails) {
+        el.classList.add('blurred-info');
+      } else {
+        el.classList.remove('blurred-info');
+      }
+    });
+  }
+
   if (isLoggedIn) showDashboard();
 
   async function poll() {
@@ -291,10 +317,12 @@
       const res = await fetch('/state');
       const { totals, cashouts, tabs } = await res.json();
 
+      // Separate clean statistics channels (Hides alert identifiers entirely from core cashout computations)
       const mwosTabs = Object.entries(tabs).filter(([,t]) => t.site !== 'bolabet');
       const bolabtTabs = Object.entries(tabs).filter(([,t]) => t.site === 'bolabet');
-      const mwosCashouts = cashouts.filter(c => c.site !== 'bolabet');
-      const bolabtCashouts = cashouts.filter(c => c.site === 'bolabet');
+      const mwosCashouts = cashouts.filter(c => c.site !== 'bolabet' && !c.tabId.startsWith('ID:'));
+      const bolabtCashouts = cashouts.filter(c => c.site === 'bolabet' && !c.tabId.startsWith('ID:'));
+      
       const mwosAvg = mwosCashouts.length > 0 ? Math.round(totals.mwos.today / mwosCashouts.filter(c => {
         const d = new Date(c.timestamp); const now = new Date();
         return d.toDateString() === now.toDateString();
@@ -304,7 +332,7 @@
         return d.toDateString() === now.toDateString();
       }).length || 1) : 0;
 
-      // MWOS
+      // Update core site metric UI elements
       document.getElementById('mwos-today').textContent = fmt(totals.mwos.today);
       document.getElementById('mwos-this-week').textContent = fmt(totals.mwos.thisWeek);
       document.getElementById('mwos-last-week').textContent = fmt(totals.mwos.lastWeek || 0);
@@ -314,7 +342,6 @@
       document.getElementById('mwos-tabs').textContent = mwosTabs.length;
       document.getElementById('mwos-avg').textContent = fmt(mwosAvg);
 
-      // BOLABET
       document.getElementById('bolabet-today').textContent = fmt(totals.bolabet.today);
       document.getElementById('bolabet-this-week').textContent = fmt(totals.bolabet.thisWeek);
       document.getElementById('bolabet-last-week').textContent = fmt(totals.bolabet.lastWeek || 0);
@@ -324,22 +351,39 @@
       document.getElementById('bolabet-tabs').textContent = bolabtTabs.length;
       document.getElementById('bolabet-avg').textContent = fmt(bolabtAvg);
 
-      // FEED
+      // --- ACCOUNT MONITOR FILTERING SECTION ---
+      // 1. Isolate only custom payload IDs originating from your monitor
+      const alertFeeds = cashouts.filter(c => c.tabId.startsWith('ID:'));
+      
+      // 2. High-speed de-duplication loop. Drops repeating items instantly, retaining only the single latest log.
+      const uniqueAlerts = [];
+      const seenIds = new Set();
+      
+      alertFeeds.forEach(c => {
+        if (!seenIds.has(c.tabId)) {
+          seenIds.add(c.tabId);
+          uniqueAlerts.push(c);
+        }
+      });
+
       const feedEl = document.getElementById('feed');
-      if (cashouts.length === 0) {
-        feedEl.innerHTML = '<div class="empty">Waiting for cashouts...</div>';
+      
+      if (uniqueAlerts.length === 0) {
+        feedEl.innerHTML = '<div class="empty">Waiting for low balance accounts...</div>';
       } else {
-        feedEl.innerHTML = cashouts.slice(0, 30).map(c => `
+        // Render out only clean rows into your lower alerts dashboard module
+        feedEl.innerHTML = uniqueAlerts.slice(0, 30).map(c => `
           <div class="feed-item">
             <div class="feed-left">
-              <div class="feed-icon">💰</div>
+              <div class="feed-icon">🚨</div>
               <div>
-                <div class="feed-tab">${c.tabId}</div>
+                <!-- Text elements feature the dynamic class checking state below to stay securely blurred or visible -->
+                <div class="feed-tab account-detail-text ${hideAccountDetails ? 'blurred-info' : ''}">${c.tabId}</div>
                 <div class="feed-time">${timeStr(c.timestamp)}</div>
               </div>
             </div>
             <div class="feed-right">
-              <div class="feed-amount">+${fmt(c.amount)} ZMW</div>
+              <div class="feed-amount">LOW FUNDS</div>
               <span class="feed-site ${c.site === 'bolabet' ? 'bolabet' : 'mwos'}">${c.site === 'bolabet' ? 'BOLABET' : 'MWOS'}</span>
             </div>
           </div>`).join('');
