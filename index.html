@@ -120,7 +120,6 @@
     background: rgba(255, 255, 255, 0.35);
   }
 
-  /* Two separate item data sides layout requested */
   .feed-item { 
     display: grid; 
     grid-template-columns: 1fr 1fr; 
@@ -141,13 +140,9 @@
   .feed-site.mwos { background: #ecfdf5; color: #065f46; }
   .feed-site.bolabet { background: #fef3c7; color: #92400e; }
 
-  .blurred-info { filter: blur(5px); transition: filter 0.2s; user-select: none; }
-  .revealed-info { filter: none; }
-
   .empty { padding: 40px; text-align: center; color: #cbd5e1; font-size: 13px; font-weight: 500; }
   .bottom-space { height: 30px; }
 
-  /* Privacy Separator Selectors styling matches view layout */
   .privacy-row-split {
     display: flex;
     justify-content: space-between;
@@ -488,4 +483,11 @@
 
           if (rawStr.includes('(') && rawStr.includes(')')) {
             idPart = rawStr.split('(')[0].trim();
-            numPa
+            numPart = rawStr.slice(rawStr.indexOf('(') + 1, rawStr.indexOf(')')).trim();
+          } else {
+            idPart = rawStr;
+          }
+
+          return `
+          <div class="feed-item">
+            <div class="column-part">
