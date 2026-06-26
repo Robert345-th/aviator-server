@@ -6,13 +6,11 @@ const { Client } = require('pg');
 const PASSWORD = 'R0978012009';
 const TIMEOUT_MS = 30000;
 
-// Twilio config from environment
 const TWILIO_SID = process.env.TWILIO_SID;
 const TWILIO_TOKEN = process.env.TWILIO_TOKEN;
 const TWILIO_FROM = process.env.TWILIO_FROM;
 const MY_PHONE = process.env.MY_PHONE;
 
-// Send SMS via Twilio
 function sendSMS(message) {
   if (!TWILIO_SID || !TWILIO_TOKEN || !TWILIO_FROM || !MY_PHONE) return;
   const auth = Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64');
@@ -39,37 +37,49 @@ function sendSMS(message) {
 }
 
 let tabs = {};
+let db = null;
+let dbReady = false;
 
-const db = new Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
-
-async function initDB() {
-  await db.connect();
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS totals (
-      site TEXT PRIMARY KEY,
-      today NUMERIC DEFAULT 0,
-      this_week NUMERIC DEFAULT 0,
-      last_week NUMERIC DEFAULT 0,
-      this_month NUMERIC DEFAULT 0,
-      last_month NUMERIC DEFAULT 0,
-      last_day_date TEXT DEFAULT '',
-      last_week_date TEXT DEFAULT '',
-      last_month_str TEXT DEFAULT ''
-    )
-  `);
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS cashouts (
-      id SERIAL PRIMARY KEY,
-      tab_id TEXT,
-      amount NUMERIC,
-      timestamp BIGINT,
-      site TEXT,
-      created_at TIMESTAMP DEFAULT NOW()
-    )
-  `);
-  await db.query(`INSERT INTO totals (site) VALUES ('mwos') ON CONFLICT DO NOTHING`);
-  await db.query(`INSERT INTO totals (site) VALUES ('bolabet') ON CONFLICT DO NOTHING`);
-  console.log('Database ready!');
+async function connectDB() {
+  try {
+    db = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 10000,
+    });
+    await db.connect();
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS totals (
+        site TEXT PRIMARY KEY,
+        today NUMERIC DEFAULT 0,
+        this_week NUMERIC DEFAULT 0,
+        last_week NUMERIC DEFAULT 0,
+        this_month NUMERIC DEFAULT 0,
+        last_month NUMERIC DEFAULT 0,
+        last_day_date TEXT DEFAULT '',
+        last_week_date TEXT DEFAULT '',
+        last_month_str TEXT DEFAULT ''
+      )
+    `);
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS cashouts (
+        id SERIAL PRIMARY KEY,
+        tab_id TEXT,
+        amount NUMERIC,
+        timestamp BIGINT,
+        site TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    await db.query(`INSERT INTO totals (site) VALUES ('mwos') ON CONFLICT DO NOTHING`);
+    await db.query(`INSERT INTO totals (site) VALUES ('bolabet') ON CONFLICT DO NOTHING`);
+    dbReady = true;
+    console.log('Database ready!');
+  } catch (err) {
+    console.error('DB connection failed, retrying in 5s...', err.message);
+    dbReady = false;
+    setTimeout(connectDB, 5000);
+  }
 }
 
 function getSite(site) {
@@ -77,7 +87,6 @@ function getSite(site) {
 }
 
 async function checkReset(site) {
-  // Use Zambia time (UTC+2)
   const now = new Date(new Date().getTime() + (2 * 60 * 60 * 1000));
   const dateStr = now.toUTCString().slice(0, 16);
   const monthStr = `${now.getFullYear()}-${now.getMonth()}`;
@@ -86,9 +95,7 @@ async function checkReset(site) {
   let updates = {};
 
   if (row.last_day_date !== '' && row.last_day_date !== dateStr) {
-    // Always roll today into this_week
     updates.this_week = parseFloat(row.this_week) + parseFloat(row.today);
-    // Only roll today into this_month on Sundays (day === 0)
     if (now.getDay() === 0) {
       updates.this_month = parseFloat(row.this_month) + parseFloat(row.today);
     }
@@ -170,6 +177,13 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // All routes below need DB
+  if (!dbReady) {
+    res.writeHead(503, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Database connecting, please wait...' }));
+    return;
+  }
+
   if (req.method === 'POST' && req.url === '/heartbeat') {
     let body = '';
     req.on('data', c => body += c);
@@ -204,11 +218,8 @@ const server = http.createServer(async (req, res) => {
         tabs[tabId].total += amount;
         tabs[tabId].site = s;
 
-        // Get updated today total for SMS
         const todayRes = await db.query('SELECT today FROM totals WHERE site = $1', [s]);
         const todayTotal = parseFloat(todayRes.rows[0].today);
-
-        // Send SMS notification
         const siteName = s === 'bolabet' ? 'BOLABET' : 'MWOS';
         const smsAmt = data.smsAmount || amount;
         sendSMS(`✅ ${siteName} CASHOUT\n+${amount} ZMW\nBalance: ${smsAmt} ZMW\nToday: ${todayTotal} ZMW\nTab: ${tabId}`);
@@ -241,9 +252,8 @@ const server = http.createServer(async (req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-initDB().then(() => {
-  server.listen(PORT, () => console.log('Server running on port ' + PORT));
-}).catch(err => {
-  console.error('DB init failed:', err);
-  process.exit(1);
-});
+
+// Start server first, then connect DB — server never crashes
+server.listen(PORT, () => console.log('Server running on port ' + PORT));
+connectDB();
+        
