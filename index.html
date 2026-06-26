@@ -9,185 +9,95 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #f1f5f9; font-family: 'Inter', sans-serif; min-height: 100vh; }
-
-  #login-screen {
-    display: flex; align-items: center; justify-content: center;
-    min-height: 100vh; padding: 20px;
-  }
-  .login-card {
-    background: #fff; border-radius: 24px; padding: 40px 32px;
-    width: 100%; max-width: 360px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08); text-align: center;
-  }
+  #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+  .login-card { background: #fff; border-radius: 24px; padding: 40px 32px; width: 100%; max-width: 360px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); text-align: center; }
   .login-card h2 { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
   .login-card p { font-size: 13px; color: #94a3b8; margin-bottom: 28px; }
-  .login-card input {
-    width: 100%; padding: 14px 44px 14px 16px; border: 2px solid #e2e8f0;
-    border-radius: 12px; font-size: 16px; color: #0f172a;
-    outline: none; text-align: center; letter-spacing: 4px;
-    transition: border-color 0.2s;
-  }
+  .login-card input { width: 100%; padding: 14px 44px 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; color: #0f172a; outline: none; text-align: center; letter-spacing: 4px; transition: border-color 0.2s; margin-bottom: 0; }
   .login-card input:focus { border-color: #10b981; }
-  .login-card button {
-    width: 100%; padding: 14px; background: #10b981; color: #fff;
-    border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer;
-  }
+  .login-card button { width: 100%; padding: 14px; background: #10b981; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
   .login-error { color: #ef4444; font-size: 13px; margin-top: 12px; display: none; }
-
   #main-screen { display: none; }
-
-  .topbar {
-    background: #fff; padding: 16px 20px;
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 10;
-  }
+  .topbar { background: #fff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 10; }
   .topbar-title { font-size: 16px; font-weight: 800; color: #0f172a; }
   .topbar-sub { font-size: 11px; color: #94a3b8; }
-  .live-badge {
-    display: flex; align-items: center; gap: 6px;
-    background: #ecfdf5; color: #059669;
-    font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 20px;
-  }
+  .live-badge { display: flex; align-items: center; gap: 6px; background: #ecfdf5; color: #059669; font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 20px; }
   .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #10b981; animation: pulse 1.2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  .logout-btn {
-    background: none; border: 1px solid #e2e8f0; color: #94a3b8;
-    padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;
-  }
-
+  .logout-btn { background: none; border: 1px solid #e2e8f0; color: #94a3b8; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; }
   .content { padding: 16px; max-width: 600px; margin: 0 auto; }
-
   .site-hero { border-radius: 20px 20px 0 0; padding: 20px; color: #fff; }
   .site-hero.mwos { background: linear-gradient(135deg, #059669, #10b981); }
   .site-hero.bolabet { background: linear-gradient(135deg, #d97706, #f59e0b); }
   .site-name { font-size: 11px; font-weight: 800; letter-spacing: 3px; opacity: 0.8; margin-bottom: 12px; }
-
   .today-label { font-size: 9px; letter-spacing: 3px; opacity: 0.6; margin-bottom: 4px; }
   .today-amount { font-size: 52px; font-weight: 900; line-height: 1; margin-bottom: 2px; }
   .today-currency { font-size: 11px; opacity: 0.6; margin-bottom: 14px; }
-
   .week-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
   .month-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-
   .period-box { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; }
   .period-label { font-size: 9px; letter-spacing: 2px; opacity: 0.65; margin-bottom: 4px; }
   .period-val { font-size: 20px; font-weight: 900; }
   .period-sub { font-size: 9px; opacity: 0.5; margin-top: 2px; }
-
-  .site-stats-card {
-    background: #fff; border-radius: 0 0 16px 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    margin-bottom: 20px; overflow: hidden;
-  }
+  .site-stats-card { background: #fff; border-radius: 0 0 16px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: grid; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 20px; overflow: hidden; }
   .site-stat { padding: 14px 12px; text-align: center; border-right: 1px solid #f8fafc; }
   .site-stat:last-child { border-right: none; }
   .site-stat-label { font-size: 9px; font-weight: 600; color: #94a3b8; letter-spacing: 1px; margin-bottom: 6px; }
   .site-stat-val { font-size: 24px; font-weight: 900; color: #0f172a; }
   .site-stat-val.green { color: #10b981; }
   .site-stat-val.yellow { color: #f59e0b; }
-
-  /* ── LOW BALANCE ALERTS ── */
   .alerts-section { margin-bottom: 20px; }
-
-  .reveal-btn {
-    width: 100%;
-    background: #1e293b; color: #fff; border: none;
-    padding: 14px 16px; border-radius: 12px;
-    font-size: 13px; font-weight: 700; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
+  .reveal-btn { width: 100%; background: #1e293b; color: #fff; border: none; padding: 14px 16px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .reveal-btn:active { opacity: 0.85; }
-
   #alerts-panel { display: none; margin-top: 12px; }
-
-  .hide-btn {
-    width: 100%;
-    background: #0f172a; color: #fff; border: none;
-    padding: 12px 16px; border-radius: 10px;
-    font-size: 12px; font-weight: 700; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    margin-bottom: 14px;
-  }
+  .hide-btn { width: 100%; background: #0f172a; color: #fff; border: none; padding: 12px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; }
   .hide-btn:active { opacity: 0.85; }
-
   .box-wrapper { margin-bottom: 16px; }
-
-  .box-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 16px; background: #0f172a; border-radius: 14px 14px 0 0;
-  }
+  .box-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #0f172a; border-radius: 14px 14px 0 0; }
   .box-title { font-size: 12px; font-weight: 800; color: #f1f5f9; letter-spacing: 2px; }
   .box-count { font-size: 11px; font-weight: 700; background: #1e293b; color: #94a3b8; padding: 4px 10px; border-radius: 20px; }
   .box-count.full { background: #ef4444; color: #fff; }
-
   .box-body { background: #fff; border-radius: 0 0 14px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden; }
-
-  .account-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 14px; border-bottom: 1px solid #f1f5f9; gap: 8px;
-  }
+  .account-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #f1f5f9; gap: 8px; }
   .account-row:last-child { border-bottom: none; }
-
   .chips { display: flex; gap: 12px; flex: 1; }
   .chip { background: #f1f5f9; border-radius: 8px; padding: 8px 14px; }
   .chip-val { font-size: 13px; font-weight: 800; color: #0f172a; }
   .chip-val.phone { font-family: monospace; font-size: 12px; font-weight: 600; }
-
   .row-num { font-size: 12px; font-weight: 800; color: #94a3b8; min-width: 24px; text-align: right; }
-
-  .empty-alerts { padding: 24px; text-align: center; color: #cbd5e1; font-size: 13px;
-    background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-
+  .empty-alerts { padding: 24px; text-align: center; color: #cbd5e1; font-size: 13px; background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
   .box-footer { display: flex; justify-content: space-between; padding: 10px 14px 14px; gap: 10px; }
-  .save-btn {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    color: #fff; border: none; padding: 10px 0; border-radius: 10px;
-    font-size: 11px; font-weight: 700; cursor: pointer; flex: 1;
-  }
+  .save-btn { display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; border: none; padding: 10px 0; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer; flex: 1; }
   .save-btn.ids { background: #3b82f6; }
   .save-btn.all { background: #10b981; }
   .save-btn:active { opacity: 0.8; }
-
-  /* Hidden printable note */
-  .note-printable {
-    position: fixed; left: -9999px; top: 0; width: 400px;
-    background: #fff; padding: 32px 28px; font-family: 'Inter', sans-serif;
-  }
+  .note-printable { position: fixed; left: -9999px; top: 0; width: 400px; background: #fff; padding: 32px 28px; font-family: 'Inter', sans-serif; }
   .note-title { font-size: 16px; font-weight: 900; color: #0f172a; margin-bottom: 4px; }
   .note-date { font-size: 11px; color: #94a3b8; margin-bottom: 20px; }
   .note-divider { border: none; border-top: 2px solid #e2e8f0; margin-bottom: 16px; }
-  .note-row {
-    display: flex; align-items: baseline; gap: 10px;
-    padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #0f172a;
-  }
+  .note-row { display: flex; align-items: baseline; gap: 10px; padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #0f172a; }
   .note-row:last-child { border-bottom: none; }
   .note-num { font-size: 11px; font-weight: 700; color: #94a3b8; min-width: 22px; text-align: right; }
   .note-id { font-weight: 800; }
   .note-sep { color: #cbd5e1; }
   .note-phone { font-family: monospace; font-size: 12px; color: #334155; }
   .note-footer { margin-top: 20px; font-size: 10px; color: #cbd5e1; text-align: center; }
-
   .bottom-space { height: 30px; }
 </style>
 </head>
 <body>
-
-<!-- LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-card">
     <h2>✈️ Mwos/Bolabet Withdraw Tracker</h2>
     <p>Enter your password to continue</p>
     <div style="position:relative;margin-bottom:14px;">
-      <input type="password" id="password-input" placeholder="Password" onkeydown="if(event.key==='Enter')login()" style="margin-bottom:0;">
+      <input type="password" id="password-input" placeholder="Password" onkeydown="if(event.key==='Enter')login()">
       <span onclick="togglePw()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px;user-select:none;">👁️</span>
     </div>
     <button onclick="login()">Unlock</button>
     <div class="login-error" id="login-error">❌ Wrong password</div>
   </div>
 </div>
-
-<!-- MAIN DASHBOARD SCREEN -->
 <div id="main-screen">
   <div class="topbar">
     <div>
@@ -199,137 +109,72 @@
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </div>
-
   <div class="content">
-
-    <!-- MWOS HERO -->
     <div class="site-hero mwos">
       <div class="site-name">MWOS</div>
       <div class="today-label">TODAY'S PROFIT</div>
       <div class="today-amount" id="mwos-today">0</div>
       <div class="today-currency">Zambian Kwacha (ZMW)</div>
       <div class="week-grid">
-        <div class="period-box">
-          <div class="period-label">THIS WEEK</div>
-          <div class="period-val" id="mwos-this-week">0</div>
-          <div class="period-sub">ZMW — resets Saturday</div>
-        </div>
-        <div class="period-box">
-          <div class="period-label">LAST WEEK</div>
-          <div class="period-val" id="mwos-last-week">0</div>
-          <div class="period-sub">ZMW</div>
-        </div>
+        <div class="period-box"><div class="period-label">THIS WEEK</div><div class="period-val" id="mwos-this-week">0</div><div class="period-sub">ZMW — resets Saturday</div></div>
+        <div class="period-box"><div class="period-label">LAST WEEK</div><div class="period-val" id="mwos-last-week">0</div><div class="period-sub">ZMW</div></div>
       </div>
       <div style="height:8px;"></div>
       <div class="month-grid">
-        <div class="period-box">
-          <div class="period-label">THIS MONTH</div>
-          <div class="period-val" id="mwos-this-month">0</div>
-          <div class="period-sub">ZMW — resets on 1st</div>
-        </div>
-        <div class="period-box">
-          <div class="period-label">LAST MONTH</div>
-          <div class="period-val" id="mwos-last-month">0</div>
-          <div class="period-sub">ZMW</div>
-        </div>
+        <div class="period-box"><div class="period-label">THIS MONTH</div><div class="period-val" id="mwos-this-month">0</div><div class="period-sub">ZMW — resets on 1st</div></div>
+        <div class="period-box"><div class="period-label">LAST MONTH</div><div class="period-val" id="mwos-last-month">0</div><div class="period-sub">ZMW</div></div>
       </div>
     </div>
     <div class="site-stats-card">
-      <div class="site-stat">
-        <div class="site-stat-label">CASHOUTS</div>
-        <div class="site-stat-val" id="mwos-cashouts">0</div>
-      </div>
-      <div class="site-stat">
-        <div class="site-stat-label">ACTIVE TABS</div>
-        <div class="site-stat-val green" id="mwos-tabs">0</div>
-      </div>
-      <div class="site-stat">
-        <div class="site-stat-label">AVG / WIN</div>
-        <div class="site-stat-val" id="mwos-avg">0</div>
-      </div>
+      <div class="site-stat"><div class="site-stat-label">CASHOUTS</div><div class="site-stat-val" id="mwos-cashouts">0</div></div>
+      <div class="site-stat"><div class="site-stat-label">ACTIVE TABS</div><div class="site-stat-val green" id="mwos-tabs">0</div></div>
+      <div class="site-stat"><div class="site-stat-label">AVG / WIN</div><div class="site-stat-val" id="mwos-avg">0</div></div>
     </div>
-
-    <!-- BOLABET HERO -->
     <div class="site-hero bolabet">
       <div class="site-name">BOLABET</div>
       <div class="today-label">TODAY'S PROFIT</div>
       <div class="today-amount" id="bolabet-today">0</div>
       <div class="today-currency">Zambian Kwacha (ZMW)</div>
       <div class="week-grid">
-        <div class="period-box">
-          <div class="period-label">THIS WEEK</div>
-          <div class="period-val" id="bolabet-this-week">0</div>
-          <div class="period-sub">ZMW — resets Saturday</div>
-        </div>
-        <div class="period-box">
-          <div class="period-label">LAST WEEK</div>
-          <div class="period-val" id="bolabet-last-week">0</div>
-          <div class="period-sub">ZMW</div>
-        </div>
+        <div class="period-box"><div class="period-label">THIS WEEK</div><div class="period-val" id="bolabet-this-week">0</div><div class="period-sub">ZMW — resets Saturday</div></div>
+        <div class="period-box"><div class="period-label">LAST WEEK</div><div class="period-val" id="bolabet-last-week">0</div><div class="period-sub">ZMW</div></div>
       </div>
       <div style="height:8px;"></div>
       <div class="month-grid">
-        <div class="period-box">
-          <div class="period-label">THIS MONTH</div>
-          <div class="period-val" id="bolabet-this-month">0</div>
-          <div class="period-sub">ZMW — resets on 1st</div>
-        </div>
-        <div class="period-box">
-          <div class="period-label">LAST MONTH</div>
-          <div class="period-val" id="bolabet-last-month">0</div>
-          <div class="period-sub">ZMW</div>
-        </div>
+        <div class="period-box"><div class="period-label">THIS MONTH</div><div class="period-val" id="bolabet-this-month">0</div><div class="period-sub">ZMW — resets on 1st</div></div>
+        <div class="period-box"><div class="period-label">LAST MONTH</div><div class="period-val" id="bolabet-last-month">0</div><div class="period-sub">ZMW</div></div>
       </div>
     </div>
     <div class="site-stats-card">
-      <div class="site-stat">
-        <div class="site-stat-label">CASHOUTS</div>
-        <div class="site-stat-val" id="bolabet-cashouts">0</div>
-      </div>
-      <div class="site-stat">
-        <div class="site-stat-label">ACTIVE TABS</div>
-        <div class="site-stat-val yellow" id="bolabet-tabs">0</div>
-      </div>
-      <div class="site-stat">
-        <div class="site-stat-label">AVG / WIN</div>
-        <div class="site-stat-val" id="bolabet-avg">0</div>
-      </div>
+      <div class="site-stat"><div class="site-stat-label">CASHOUTS</div><div class="site-stat-val" id="bolabet-cashouts">0</div></div>
+      <div class="site-stat"><div class="site-stat-label">ACTIVE TABS</div><div class="site-stat-val yellow" id="bolabet-tabs">0</div></div>
+      <div class="site-stat"><div class="site-stat-label">AVG / WIN</div><div class="site-stat-val" id="bolabet-avg">0</div></div>
     </div>
-
-    <!-- LOW BALANCE ALERTS -->
     <div class="alerts-section">
-      <button class="reveal-btn" id="reveal-btn" onclick="showPanel()">👁️ View IDs & Numbers</button>
+      <button class="reveal-btn" id="reveal-btn" onclick="showPanel()">👁️ View IDs &amp; Numbers</button>
       <div id="alerts-panel">
-        <button class="hide-btn" onclick="hidePanel()">🔒 Hide IDs & Numbers</button>
+        <button class="hide-btn" onclick="hidePanel()">🔒 Hide IDs &amp; Numbers</button>
         <div id="alerts-container"></div>
       </div>
     </div>
-
     <div class="bottom-space"></div>
   </div>
 </div>
-
-<!-- Hidden printable note -->
 <div class="note-printable" id="note-printable">
   <div class="note-title" id="note-title"></div>
   <div class="note-date" id="note-date"></div>
   <hr class="note-divider">
   <div id="note-rows"></div>
   <div class="note-footer">Mwos/Bolabet Withdraw Tracker</div>
-</div>
-
-<script>
+</div><script>
   const BOX_SIZE = 30;
   let isLoggedIn = sessionStorage.getItem('aviator_auth') === 'true';
-
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
-
   function showDashboard() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('main-screen').style.display = 'block';
     poll();
   }
-
   function login() {
     const pw = document.getElementById('password-input').value;
     fetch('/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) })
@@ -340,48 +185,37 @@
     })
     .catch(() => { document.getElementById('login-error').style.display = 'block'; });
   }
-
   function logout() {
     sessionStorage.removeItem('aviator_auth'); isLoggedIn = false;
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('main-screen').style.display = 'none';
     document.getElementById('password-input').value = '';
   }
-
   function togglePw() {
     const input = document.getElementById('password-input');
     input.type = input.type === 'password' ? 'text' : 'password';
   }
-
   function showPanel() {
     document.getElementById('reveal-btn').style.display = 'none';
     document.getElementById('alerts-panel').style.display = 'block';
   }
-
   function hidePanel() {
     document.getElementById('alerts-panel').style.display = 'none';
     document.getElementById('reveal-btn').style.display = 'flex';
   }
-
   function parseTabId(tabId) {
     const match = tabId.match(/ID:\s*(\S+)\s*\(([^)]+)\)/);
     if (match) return { id: match[1], phone: match[2] };
     return { id: tabId, phone: '—' };
   }
-
   function nowStr() {
-    return new Date().toLocaleString('en-GB', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
+    return new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
-
   function renderNote(title, rows) {
     document.getElementById('note-title').textContent = title;
     document.getElementById('note-date').textContent = nowStr();
     document.getElementById('note-rows').innerHTML = rows;
   }
-
   function downloadImage(filename) {
     const el = document.getElementById('note-printable');
     html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
@@ -391,104 +225,85 @@
       link.click();
     });
   }
-
   function saveIds(boxIndex, accounts) {
-    renderNote(
-      `BOX ${boxIndex + 1} — IDs (${accounts.length}/${BOX_SIZE} FULL)`,
-      accounts.map((c, i) => {
-        const { id } = parseTabId(c.tabId);
-        return `<div class="note-row"><span class="note-num">${i + 1}.</span><span class="note-id">${id}</span></div>`;
-      }).join('')
-    );
-    downloadImage(`box-${boxIndex + 1}-ids.png`);
+    renderNote('BOX ' + (boxIndex + 1) + ' — IDs (' + accounts.length + '/' + BOX_SIZE + ' FULL)',
+      accounts.map(function(c, i) {
+        var id = parseTabId(c.tabId).id;
+        return '<div class="note-row"><span class="note-num">' + (i+1) + '.</span><span class="note-id">' + id + '</span></div>';
+      }).join(''));
+    downloadImage('box-' + (boxIndex + 1) + '-ids.png');
   }
-
   function saveAll(boxIndex, accounts) {
-    renderNote(
-      `BOX ${boxIndex + 1} — IDs & Numbers (${accounts.length}/${BOX_SIZE} FULL)`,
-      accounts.map((c, i) => {
-        const { id, phone } = parseTabId(c.tabId);
-        return `<div class="note-row"><span class="note-num">${i + 1}.</span><span class="note-id">${id}</span><span class="note-sep">|</span><span class="note-phone">${phone}</span></div>`;
-      }).join('')
-    );
-    downloadImage(`box-${boxIndex + 1}-all.png`);
+    renderNote('BOX ' + (boxIndex + 1) + ' — IDs & Numbers (' + accounts.length + '/' + BOX_SIZE + ' FULL)',
+      accounts.map(function(c, i) {
+        var p = parseTabId(c.tabId);
+        return '<div class="note-row"><span class="note-num">' + (i+1) + '.</span><span class="note-id">' + p.id + '</span><span class="note-sep">|</span><span class="note-phone">' + p.phone + '</span></div>';
+      }).join(''));
+    downloadImage('box-' + (boxIndex + 1) + '-all.png');
   }
-
   function renderAlerts(alerts) {
-    const container = document.getElementById('alerts-container');
-    const alertFeeds = alerts.filter(c => c.tabId.startsWith('ID:'));
-
-    const uniqueAlerts = [];
-    const seenIds = new Set();
-    alertFeeds.forEach(c => {
+    var container = document.getElementById('alerts-container');
+    var alertFeeds = alerts.filter(function(c) { return c.tabId.startsWith('ID:'); });
+    var uniqueAlerts = [];
+    var seenIds = new Set();
+    alertFeeds.forEach(function(c) {
       if (!seenIds.has(c.tabId)) { seenIds.add(c.tabId); uniqueAlerts.push(c); }
     });
-
     if (uniqueAlerts.length === 0) {
       container.innerHTML = '<div class="empty-alerts">Waiting for low balance accounts...</div>';
-      window._boxes = [];
-      return;
+      window._boxes = []; return;
     }
-
-    const boxes = [];
-    for (let i = 0; i < uniqueAlerts.length; i += BOX_SIZE) {
-      boxes.push(uniqueAlerts.slice(i, i + BOX_SIZE));
-    }
+    var boxes = [];
+    for (var i = 0; i < uniqueAlerts.length; i += BOX_SIZE) { boxes.push(uniqueAlerts.slice(i, i + BOX_SIZE)); }
     window._boxes = boxes;
-
-    container.innerHTML = boxes.map((box, boxIndex) => {
-      const isFull = box.length >= BOX_SIZE;
-
-      const rows = box.map((c, rowIdx) => {
-        const { id, phone } = parseTabId(c.tabId);
-        return `
-          <div class="account-row">
-            <div class="chips">
-              <div class="chip"><div class="chip-val">${id}</div></div>
-              <div class="chip"><div class="chip-val phone">${phone}</div></div>
-            </div>
-            <div class="row-num">${rowIdx + 1}</div>
-          </div>`;
+    container.innerHTML = boxes.map(function(box, boxIndex) {
+      var isFull = box.length >= BOX_SIZE;
+      var rows = box.map(function(c, rowIdx) {
+        var p = parseTabId(c.tabId);
+        return '<div class="account-row"><div class="chips"><div class="chip"><div class="chip-val">' + p.id + '</div></div><div class="chip"><div class="chip-val phone">' + p.phone + '</div></div></div><div class="row-num">' + (rowIdx + 1) + '</div></div>';
       }).join('');
-
-      const saveButtons = isFull ? `
-        <div class="box-footer">
-          <button class="save-btn ids" onclick="saveIds(${boxIndex}, window._boxes[${boxIndex}])">💾 Save IDs</button>
-          <button class="save-btn all" onclick="saveAll(${boxIndex}, window._boxes[${boxIndex}])">💾 Save IDs & Numbers</button>
-        </div>` : '';
-
-      return `
-        <div class="box-wrapper">
-          <div class="box-header">
-            <div class="box-title">⚠️ BOX ${boxIndex + 1}</div>
-            <div class="box-count ${isFull ? 'full' : ''}">${box.length} / ${BOX_SIZE}${isFull ? ' • FULL' : ''}</div>
-          </div>
-          <div class="box-body">${rows}</div>
-          ${saveButtons}
-        </div>`;
+      var btns = isFull ? '<div class="box-footer"><button class="save-btn ids" onclick="saveIds(' + boxIndex + ',window._boxes[' + boxIndex + '])">💾 Save IDs</button><button class="save-btn all" onclick="saveAll(' + boxIndex + ',window._boxes[' + boxIndex + '])">💾 Save IDs & Numbers</button></div>' : '';
+      return '<div class="box-wrapper"><div class="box-header"><div class="box-title">⚠️ BOX ' + (boxIndex + 1) + '</div><div class="box-count' + (isFull ? ' full' : '') + '">' + box.length + ' / ' + BOX_SIZE + (isFull ? ' • FULL' : '') + '</div></div><div class="box-body">' + rows + '</div>' + btns + '</div>';
     }).join('');
   }
-
   if (isLoggedIn) showDashboard();
-
   async function poll() {
     if (!isLoggedIn) return;
     try {
-      const res = await fetch('/state');
-      const { totals, cashouts, tabs } = await res.json();
+      var res = await fetch('/state');
+      var data = await res.json();
+      if (data.error) { setTimeout(poll, 3000); return; }
+      var totals = data.totals; var cashouts = data.cashouts; var tabs = data.tabs;
+      var mwosTabs = Object.entries(tabs).filter(function(e) { return e[1].site !== 'bolabet'; });
+      var bolabtTabs = Object.entries(tabs).filter(function(e) { return e[1].site === 'bolabet'; });
+      var mwosCashouts = cashouts.filter(function(c) { return c.site !== 'bolabet' && !c.tabId.startsWith('ID:'); });
+      var bolabtCashouts = cashouts.filter(function(c) { return c.site === 'bolabet' && !c.tabId.startsWith('ID:'); });
+      var today = new Date().toDateString();
+      var mwosToday = mwosCashouts.filter(function(c) { return new Date(c.timestamp).toDateString() === today; });
+      var bolabtToday = bolabtCashouts.filter(function(c) { return new Date(c.timestamp).toDateString() === today; });
+      var mwosAvg = mwosToday.length > 0 ? Math.round(totals.mwos.today / mwosToday.length) : 0;
+      var bolabtAvg = bolabtToday.length > 0 ? Math.round(totals.bolabet.today / bolabtToday.length) : 0;
+      document.getElementById('mwos-today').textContent = fmt(totals.mwos.today);
+      document.getElementById('mwos-this-week').textContent = fmt(totals.mwos.thisWeek);
+      document.getElementById('mwos-last-week').textContent = fmt(totals.mwos.lastWeek || 0);
+      document.getElementById('mwos-this-month').textContent = fmt(totals.mwos.thisMonth);
+      document.getElementById('mwos-last-month').textContent = fmt(totals.mwos.lastMonth || 0);
+      document.getElementById('mwos-cashouts').textContent = mwosCashouts.length;
+      document.getElementById('mwos-tabs').textContent = mwosTabs.length;
+      document.getElementById('mwos-avg').textContent = fmt(mwosAvg);
+      document.getElementById('bolabet-today').textContent = fmt(totals.bolabet.today);
+      document.getElementById('bolabet-this-week').textContent = fmt(totals.bolabet.thisWeek);
+      document.getElementById('bolabet-last-week').textContent = fmt(totals.bolabet.lastWeek || 0);
+      document.getElementById('bolabet-this-month').textContent = fmt(totals.bolabet.thisMonth);
+      document.getElementById('bolabet-last-month').textContent = fmt(totals.bolabet.lastMonth || 0);
+      document.getElementById('bolabet-cashouts').textContent = bolabtCashouts.length;
+      document.getElementById('bolabet-tabs').textContent = bolabtTabs.length;
+      document.getElementById('bolabet-avg').textContent = fmt(bolabtAvg);
+      renderAlerts(cashouts);
+    } catch(e) {}
+    setTimeout(poll, 1000);
+  }
+</script>
+</body>
+</html>
 
-      const mwosTabs = Object.entries(tabs).filter(([,t]) => t.site !== 'bolabet');
-      const bolabtTabs = Object.entries(tabs).filter(([,t]) => t.site === 'bolabet');
-      const mwosCashouts = cashouts.filter(c => c.site !== 'bolabet' && !c.tabId.startsWith('ID:'));
-      const bolabtCashouts = cashouts.filter(c => c.site === 'bolabet' && !c.tabId.startsWith('ID:'));
-
-      const mwosAvg = mwosCashouts.length > 0 ? Math.round(totals.mwos.today / (mwosCashouts.filter(c => {
-        const d = new Date(c.timestamp); const now = new Date();
-        return d.toDateString() === now.toDateString();
-      }).length || 1)) : 0;
-      const bolabtAvg = bolabtCashouts.length > 0 ? Math.round(totals.bolabet.today / (bolabtCashouts.filter(c => {
-        const d = new Date(c.timestamp); const now = new Date();
-        return d.toDateString() === now.toDateString();
-      }).length || 1)) : 0;
-
-     
