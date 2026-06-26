@@ -1,4 +1,3 @@
-async function getCashouts() {
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
@@ -85,34 +84,24 @@ async function checkReset(site) {
   const res = await db.query('SELECT * FROM totals WHERE site = $1', [site]);
   const row = res.rows[0];
   let updates = {};
-
   if (row.last_day_date !== '' && row.last_day_date !== dateStr) {
-    // Always roll today into this_week
     updates.this_week = parseFloat(row.this_week) + parseFloat(row.today);
-    // Only roll today into this_month on Sundays (day === 0)
-    if (now.getDay() === 0) {
-      updates.this_month = parseFloat(row.this_month) + parseFloat(row.today);
-    }
+    updates.this_month = parseFloat(row.this_month) + parseFloat(row.today);
     updates.today = 0;
   }
-
   if (row.last_day_date !== dateStr) updates.last_day_date = dateStr;
-
   if (now.getDate() === 1 && row.last_month_str !== monthStr) {
     updates.last_month = updates.this_month || row.this_month;
     updates.this_month = 0;
     updates.last_month_str = monthStr;
   }
-
   if (row.last_month_str === '') updates.last_month_str = monthStr;
-
   if (now.getDay() === 6 && row.last_week_date !== dateStr) {
     const weekTotal = (updates.this_week || parseFloat(row.this_week)) + (updates.today !== undefined ? updates.today : parseFloat(row.today));
     updates.last_week = weekTotal;
     updates.this_week = 0;
     updates.last_week_date = dateStr;
   }
-
   if (Object.keys(updates).length > 0) {
     const cols = Object.keys(updates).map((k, i) => `${k} = $${i+2}`).join(', ');
     const vals = Object.values(updates);
@@ -212,7 +201,11 @@ const server = http.createServer(async (req, res) => {
         // Send SMS notification
         const siteName = s === 'bolabet' ? 'BOLABET' : 'MWOS';
         const smsAmt = data.smsAmount || amount;
-        sendSMS(`✅ ${siteName} CASHOUT\n+${amount} ZMW\nBalance: ${smsAmt} ZMW\nToday: ${todayTotal} ZMW\nTab: ${tabId}`);
+        sendSMS(`✅ ${siteName} CASHOUT
++${amount} ZMW
+Balance: ${smsAmt} ZMW
+Today: ${todayTotal} ZMW
+Tab: ${tabId}`);
 
         console.log(`[CASHOUT] ${s} | +${amount} ZMW`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
