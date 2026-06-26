@@ -56,13 +56,13 @@
 
   .content { padding: 16px; max-width: 600px; margin: 0 auto; }
 
-  /* Site hero layouts */
+  /* Site heroes */
   .site-hero { border-radius: 20px 20px 0 0; padding: 20px; color: #fff; }
   .site-hero.mwos { background: linear-gradient(135deg, #059669, #10b981); }
   .site-hero.bolabet { background: linear-gradient(135deg, #d97706, #f59e0b); }
   .site-name { font-size: 11px; font-weight: 800; letter-spacing: 3px; opacity: 0.8; margin-bottom: 12px; }
 
-  /* Figures labels */
+  /* Figures values */
   .today-label { font-size: 9px; letter-spacing: 3px; opacity: 0.6; margin-bottom: 4px; }
   .today-amount { font-size: 52px; font-weight: 900; line-height: 1; margin-bottom: 2px; }
   .today-currency { font-size: 11px; opacity: 0.6; margin-bottom: 14px; }
@@ -75,7 +75,7 @@
   .period-val { font-size: 20px; font-weight: 900; }
   .period-sub { font-size: 9px; opacity: 0.5; margin-top: 2px; }
 
-  /* Metrics panels */
+  /* Stats metrics */
   .site-stats-card {
     background: #fff; border-radius: 0 0 16px 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -89,25 +89,43 @@
   .site-stat-val.green { color: #10b981; }
   .site-stat-val.yellow { color: #f59e0b; }
 
-  /* Replaced Table Layout for Warnings */
+  /* Feed card container */
   .feed-card {
     background: #fff; border-radius: 16px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     margin-bottom: 16px; overflow: hidden;
   }
-  .feed-header { padding: 14px 16px; border-bottom: 1px solid #f8fafc; font-size: 12px; font-weight: 700; color: #ef4444; letter-spacing: 1px; }
+  .feed-header { 
+    padding: 14px 16px; 
+    border-bottom: 1px solid #f8fafc; 
+    font-size: 12px; 
+    font-weight: 700; 
+    color: #ef4444; 
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Export Button */
+  .download-btn {
+    background: #ef4444; color: #fff; border: none; padding: 6px 12px;
+    border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px; transition: background 0.15s;
+  }
+  .download-btn:hover { background: #b91c1c; }
   
-  /* Table Styles */
+  /* Table Layout rules */
   .warning-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
   .warning-table th { background: #f8fafc; color: #64748b; font-weight: 600; padding: 12px 16px; font-size: 11px; letter-spacing: 0.5px; }
   .warning-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
   .warning-table tr:last-child td { border-bottom: none; }
   
-  /* Hidden view blurs */
+  /* Mask configurations */
   .hidden-cell-data { filter: blur(6px); pointer-events: none; user-select: none; transition: filter 0.15s ease; color: #1e293b; font-weight: 700; }
   .revealed-cell-data { filter: none; pointer-events: auto; user-select: text; }
 
-  /* Green view interaction button */
+  /* Action Triggers */
   .view-row-btn {
     background: #10b981; color: #fff; border: none; padding: 6px 12px; 
     border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
@@ -246,7 +264,10 @@
     </div>
 
     <div class="feed-card">
-      <div class="feed-header">⚠️ LOW BALANCE ACCOUNT ALERTS</div>
+      <div class="feed-header">
+        <span>⚠️ LOW BALANCE ACCOUNT ALERTS</span>
+        <button class="download-btn" onclick="downloadTableAsCSV()">📥 Download CSV</button>
+      </div>
       <div id="feed-container">
         <div class="empty">Waiting for low balance accounts...</div>
       </div>
@@ -258,8 +279,8 @@
 
 <script>
   let isLoggedIn = sessionStorage.getItem('aviator_auth') === 'true';
-  // Stores IDs of rows that the user manually entered/revealed via the green button
   let revealedRows = new Set();
+  let currentRawAlertsList = []; // Holds data items for generating the CSV file accurately
 
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
 
@@ -292,7 +313,7 @@
     input.type = input.type === 'password' ? 'text' : 'password';
   }
 
-  // Toggles visibility inside a single specific row when clicking the green action button
+  // Row selection handler
   function handleRowViewToggle(rowUniqueKey) {
     if (revealedRows.has(rowUniqueKey)) {
       revealedRows.delete(rowUniqueKey);
@@ -300,7 +321,6 @@
       revealedRows.add(rowUniqueKey);
     }
     
-    // Toggle CSS classes on elements instantly
     const numEl = document.getElementById(`num-${rowUniqueKey}`);
     const idEl = document.getElementById(`id-${rowUniqueKey}`);
     const btnEl = document.getElementById(`btn-${rowUniqueKey}`);
@@ -318,6 +338,41 @@
         btnEl.classList.remove('active-view');
       }
     }
+  }
+
+  // Generates and drops a download attachment file containing the complete unique dataset
+  function downloadTableAsCSV() {
+    if (currentRawAlertsList.length === 0) {
+      alert("No data available to download yet.");
+      return;
+    }
+
+    // Prepare proper tabular rows headings
+    let csvContent = "data:text/csv;charset=utf-8,NUMBER,ID,SITE,TIME\n";
+
+    currentRawAlertsList.forEach(c => {
+      let rawStr = c.tabId.replace('ID:', '').trim();
+      let idPart = "UNKNOWN";
+      let numPart = "UNKNOWN";
+
+      if (rawStr.includes('(') && rawStr.includes(')')) {
+        idPart = rawStr.split('(')[0].trim();
+        numPart = rawStr.slice(rawStr.indexOf('(') + 1, rawStr.indexOf(')')).trim();
+      } else {
+        idPart = rawStr;
+      }
+      
+      let timeString = new Date(c.timestamp).toISOString().replace(',', '');
+      csvContent += `"${numPart}","${idPart}","${c.site.toUpperCase()}","${timeString}"\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", encodedUri);
+    downloadAnchor.setAttribute("download", `Low_Balance_Accounts_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    document.body.removeChild(downloadAnchor);
   }
 
   if (isLoggedIn) showDashboard();
@@ -342,7 +397,7 @@
         return d.toDateString() === now.toDateString();
       }).length || 1) : 0;
 
-      // Update Top Statistics Charts
+      // Update counters
       document.getElementById('mwos-today').textContent = fmt(totals.mwos.today);
       document.getElementById('mwos-this-week').textContent = fmt(totals.mwos.thisWeek);
       document.getElementById('mwos-last-week').textContent = fmt(totals.mwos.lastWeek || 0);
@@ -361,7 +416,7 @@
       document.getElementById('bolabet-tabs').textContent = bolabtTabs.length;
       document.getElementById('bolabet-avg').textContent = fmt(bolabtAvg);
 
-      // --- DEDUPLICATION & SEPARATE COLUMN PARSING ---
+      // --- ACCOUNT STRIPPING SECTION ---
       const alertFeeds = cashouts.filter(c => c.tabId.startsWith('ID:'));
       
       const uniqueAlerts = [];
@@ -370,16 +425,17 @@
       alertFeeds.forEach(c => {
         if (!seenIds.has(c.tabId)) {
           seenIds.add(c.tabId);
-          uniqueAlerts.push(c); // Keeps only the absolute latest single entry fast
+          uniqueAlerts.push(c);
         }
       });
 
+      currentRawAlertsList = uniqueAlerts; // Save reference for downloader tracking
       const containerEl = document.getElementById('feed-container');
       
       if (uniqueAlerts.length === 0) {
         containerEl.innerHTML = '<div class="empty">Waiting for low balance accounts...</div>';
       } else {
-        // Build clear, split two-column table view matching the note structure layout
+        // Build clean table configuration
         let tableHtml = `
           <table class="warning-table">
             <thead>
@@ -394,7 +450,6 @@
         `;
         
         tableHtml += uniqueAlerts.slice(0, 40).map(c => {
-          // Parse string context: "ID: 63163 (+260978012009)"
           let rawStr = c.tabId.replace('ID:', '').trim(); 
           let idPart = "UNKNOWN";
           let numPart = "UNKNOWN";
@@ -406,7 +461,6 @@
             idPart = rawStr;
           }
 
-          // Create a deterministic lookup hash key for tracking toggles safely
           let key = 'row_' + idPart.replace(/\s+/g, '') + '_' + numPart.replace(/[^\d]/g, '');
           let isRevealed = revealedRows.has(key);
 
@@ -424,26 +478,4 @@
               </td>
               <td>
                 <div id="id-${key}" class="hidden-cell-data ${isRevealed ? 'revealed-cell-data' : ''}">
-                  ${idPart}
-                </div>
-              </td>
-              <td>
-                <span class="site-row-tag ${c.site === 'bolabet' ? 'bolabet' : 'mwos'}">${c.site === 'bolabet' ? 'BOLA' : 'MWOS'}</span>
-              </td>
-            </tr>
-          `;
-        }).join('');
-        
-        tableHtml += `
-            </tbody>
-          </table>
-        `;
-        
-        containerEl.innerHTML = tableHtml;
-      }
-    } catch(e) {}
-    setTimeout(poll, 1000);
-  }
-</script>
-</body>
-</html>
+                  ${id
