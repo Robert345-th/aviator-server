@@ -117,6 +117,7 @@
   #alerts-panel { display: none; margin-top: 12px; }
   .hide-btn { width: 100%; background: #0f172a; color: #fff; border: none; padding: 12px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; }
   .box-wrapper { margin-bottom: 16px; }
+  .box-wrapper.pool-monitor-section { margin-top: 40px; padding: 20px; background: #1a1d20; border-radius: 14px; border: 1px solid #2d3238; }
   .box-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #0f172a; border-radius: 14px 14px 0 0; }
   .box-title { font-size: 12px; font-weight: 800; color: #f1f5f9; letter-spacing: 2px; }
   .box-count { font-size: 11px; font-weight: 700; background: #1e293b; color: #94a3b8; padding: 4px 10px; border-radius: 20px; }
@@ -160,7 +161,6 @@
     <h2>✈️ Mwos/Bolabet</h2>
     <p>Withdraw Tracker — Unlock to continue</p>
 
-    <!-- Fingerprint button -->
     <div class="fingerprint-btn" id="fp-btn" onclick="fingerprintLogin()">👆</div>
     <div class="fp-hint" id="fp-hint">Tap to use fingerprint</div>
     <div class="fp-status" id="fp-status"></div>
@@ -196,7 +196,6 @@
 
   <div class="content">
 
-    <!-- MWOS -->
     <div class="site-hero mwos">
       <div class="site-name">MWOS</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -232,7 +231,6 @@
       <div class="site-stat"><div class="site-stat-label">BIGGEST WIN</div><div class="site-stat-val" id="mwos-biggest">0</div></div>
     </div>
 
-    <!-- BOLABET -->
     <div class="site-hero bolabet">
       <div class="site-name">BOLABET</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -564,6 +562,72 @@
     } catch(e) { console.error(e); }
     setTimeout(poll, 3000);
   }
+</script>
+
+<div class="content" style="margin-top: 0px; padding-top: 0px;">
+  <div class="box-wrapper pool-monitor-section">
+      <div class="pool-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2d3238; padding-bottom: 12px; margin-bottom: 16px;">
+          <h2 style="margin: 0; font-size: 1.2rem; font-weight:800; color: #00bcd4; letter-spacing: 0.5px;">📱 Real-Time Login Pool Status</h2>
+          <div style="display:flex; gap: 8px;">
+              <span style="background: #28a74520; border: 1px solid #28a745; color: #28a745; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;">Free: <span id="pool-free-count">0</span></span>
+              <span style="background: #007bff20; border: 1px solid #007bff; color: #007bff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;">In-Use: <span id="pool-busy-count">0</span></span>
+          </div>
+      </div>
+      <div id="pool-grid-display" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; max-height: 320px; overflow-y: auto; padding-right: 4px;">
+          </div>
+  </div>
+</div>
+
+<script>
+  async function runPoolMonitorUpdate() {
+      if (!isLoggedIn) return;
+      try {
+          const res = await fetch('/api/pool-status');
+          const data = await res.json();
+          if (!data || !data.ok) return;
+
+          const grid = document.getElementById('pool-grid-display');
+          grid.innerHTML = '';
+          
+          let freeNum = 0; let busyNum = 0;
+          const currTime = Date.now();
+
+          data.pool.forEach(numberItem => {
+              const box = document.createElement('div');
+              box.style.padding = '8px 6px';
+              box.style.borderRadius = '8px';
+              box.style.textAlign = 'center';
+              box.style.fontSize = '0.8rem';
+              box.style.fontWeight = '700';
+              box.style.fontFamily = 'monospace';
+
+              const activeAssigned = numberItem.assigned_tab_id !== null;
+              const sessionExpired = (currTime - parseInt(numberItem.last_assigned_at || 0)) > 30000;
+
+              if (activeAssigned && !sessionExpired) {
+                  busyNum++;
+                  box.style.background = '#007bff';
+                  box.style.color = '#ffffff';
+                  box.innerHTML = `
+                      <div>${numberItem.phone_number}</div>
+                      <div style="font-size: 0.65rem; opacity: 0.85; font-weight: 400; margin-top: 2px;">📟 ${numberItem.assigned_tab_id}</div>
+                  `;
+              } else {
+                  freeNum++;
+                  box.style.background = '#28a74515';
+                  box.style.border = '1px solid #28a74535';
+                  box.style.color = '#28a745';
+                  box.innerHTML = `<div>${numberItem.phone_number}</div>`;
+              }
+              grid.appendChild(box);
+          });
+
+          document.getElementById('pool-free-count').textContent = freeNum;
+          document.getElementById('pool-busy-count').textContent = busyNum;
+      } catch(err) { console.error("Pool view fetch failure:", err); }
+  }
+  setInterval(runPoolMonitorUpdate, 3000);
+  window.addEventListener('DOMContentLoaded', runPoolMonitorUpdate);
 </script>
 </body>
 </html>
