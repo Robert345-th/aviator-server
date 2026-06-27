@@ -6,13 +6,11 @@ const { Client } = require('pg');
 const PASSWORD = 'R0978012009';
 const TIMEOUT_MS = 30000;
 
-// Twilio config from environment
 const TWILIO_SID = process.env.TWILIO_SID;
 const TWILIO_TOKEN = process.env.TWILIO_TOKEN;
 const TWILIO_FROM = process.env.TWILIO_FROM;
 const MY_PHONE = process.env.MY_PHONE;
 
-// Send SMS via Twilio
 function sendSMS(message) {
   if (!TWILIO_SID || !TWILIO_TOKEN || !TWILIO_FROM || !MY_PHONE) return;
   const auth = Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64');
@@ -77,31 +75,39 @@ function getSite(site) {
 }
 
 async function checkReset(site) {
-  // Use Zambia time (UTC+2)
+  // Zambia time (UTC+2)
   const now = new Date(new Date().getTime() + (2 * 60 * 60 * 1000));
   const dateStr = now.toUTCString().slice(0, 16);
   const monthStr = `${now.getFullYear()}-${now.getMonth()}`;
+
   const res = await db.query('SELECT * FROM totals WHERE site = $1', [site]);
   const row = res.rows[0];
   let updates = {};
+
+  // Midnight reset: add today to this_week and this_month, reset today
   if (row.last_day_date !== '' && row.last_day_date !== dateStr) {
     updates.this_week = parseFloat(row.this_week) + parseFloat(row.today);
     updates.this_month = parseFloat(row.this_month) + parseFloat(row.today);
     updates.today = 0;
   }
   if (row.last_day_date !== dateStr) updates.last_day_date = dateStr;
+
+  // Monthly reset on 1st: move this_month to last_month, reset this_month
   if (now.getDate() === 1 && row.last_month_str !== monthStr) {
-    updates.last_month = updates.this_month || row.this_month;
+    updates.last_month = updates.this_month !== undefined ? updates.this_month : parseFloat(row.this_month);
     updates.this_month = 0;
     updates.last_month_str = monthStr;
   }
   if (row.last_month_str === '') updates.last_month_str = monthStr;
-  if (now.getDay() === 6 && row.last_week_date !== dateStr) {
-    const weekTotal = (updates.this_week || parseFloat(row.this_week)) + (updates.today !== undefined ? updates.today : parseFloat(row.today));
+
+  // Weekly reset on Sunday (day 0): move this_week to last_week, reset this_week
+  if (now.getDay() === 0 && row.last_week_date !== dateStr) {
+    const weekTotal = (updates.this_week !== undefined ? updates.this_week : parseFloat(row.this_week));
     updates.last_week = weekTotal;
     updates.this_week = 0;
     updates.last_week_date = dateStr;
   }
+
   if (Object.keys(updates).length > 0) {
     const cols = Object.keys(updates).map((k, i) => `${k} = $${i+2}`).join(', ');
     const vals = Object.values(updates);
@@ -194,18 +200,12 @@ const server = http.createServer(async (req, res) => {
         tabs[tabId].total += amount;
         tabs[tabId].site = s;
 
-        // Get updated today total for SMS
         const todayRes = await db.query('SELECT today FROM totals WHERE site = $1', [s]);
         const todayTotal = parseFloat(todayRes.rows[0].today);
 
-        // Send SMS notification
         const siteName = s === 'bolabet' ? 'BOLABET' : 'MWOS';
         const smsAmt = data.smsAmount || amount;
-        sendSMS(`✅ ${siteName} CASHOUT
-+${amount} ZMW
-Balance: ${smsAmt} ZMW
-Today: ${todayTotal} ZMW
-Tab: ${tabId}`);
+        sendSMS(`✅ ${siteName} CASHOUT\n+${amount} ZMW\nBalance: ${smsAmt} ZMW\nToday: ${todayTotal} ZMW\nTab: ${tabId}`);
 
         console.log(`[CASHOUT] ${s} | +${amount} ZMW`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -215,17 +215,16 @@ Tab: ${tabId}`);
     return;
   }
 
-  // 3. PERMANENT CLEAR ROUTE (Deletes ID entries out of the SQL Postgres Database table)
   if (req.method === 'POST' && req.url === '/clear-alerts') {
     try {
       await db.query("DELETE FROM cashouts WHERE tab_id LIKE 'ID:%'");
-      console.log('Database tracking records permanently deleted from Postgres.');
+      console.log('Alert records cleared.');
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true }));
     } catch (e) {
       console.error(e);
       res.writeHead(500);
-      res.end(JSON.stringify({ error: "Failed to empty database rows" }));
+      res.end(JSON.stringify({ error: "Failed to clear alerts" }));
     }
     return;
   }
