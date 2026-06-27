@@ -131,7 +131,7 @@ async function getTotals() {
 }
 
 async function getCashouts() {
-  const res = await db.query('SELECT * FROM cashouts ORDER BY created_at DESC LIMIT 50');
+  const res = await db.query('SELECT * FROM cashouts ORDER BY created_at DESC LIMIT 200');
   return res.rows.map(r => ({
     tabId: r.tab_id,
     amount: parseFloat(r.amount),
