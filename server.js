@@ -37,8 +37,6 @@ function sendSMS(message) {
 }
 
 let tabs = {};
-// Real-time pool status state storage
-let poolStatus = { free: 0, inUse: 0 };
 
 const db = new Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
@@ -77,6 +75,7 @@ function getSite(site) {
 }
 
 async function checkReset(site) {
+  // Zambia time (UTC+2)
   const now = new Date(new Date().getTime() + (2 * 60 * 60 * 1000));
   const dateStr = now.toUTCString().slice(0, 16);
   const monthStr = `${now.getFullYear()}-${now.getMonth()}`;
@@ -85,6 +84,7 @@ async function checkReset(site) {
   const row = res.rows[0];
   let updates = {};
 
+  // Midnight reset: add today to this_week and this_month, reset today
   if (row.last_day_date !== '' && row.last_day_date !== dateStr) {
     updates.this_week = parseFloat(row.this_week) + parseFloat(row.today);
     updates.this_month = parseFloat(row.this_month) + parseFloat(row.today);
@@ -92,6 +92,7 @@ async function checkReset(site) {
   }
   if (row.last_day_date !== dateStr) updates.last_day_date = dateStr;
 
+  // Monthly reset on 1st: move this_month to last_month, reset this_month
   if (now.getDate() === 1 && row.last_month_str !== monthStr) {
     updates.last_month = updates.this_month !== undefined ? updates.this_month : parseFloat(row.this_month);
     updates.this_month = 0;
@@ -99,6 +100,7 @@ async function checkReset(site) {
   }
   if (row.last_month_str === '') updates.last_month_str = monthStr;
 
+  // Weekly reset on Sunday (day 0): move this_week to last_week, reset this_week
   if (now.getDay() === 0 && row.last_week_date !== dateStr) {
     const weekTotal = (updates.this_week !== undefined ? updates.this_week : parseFloat(row.this_week));
     updates.last_week = weekTotal;
@@ -213,24 +215,6 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // New endpoint to receive status updates from automation pools
-  if (req.method === 'POST' && req.url === '/update-pool') {
-    let body = '';
-    req.on('data', c => body += c);
-    req.on('end', () => {
-      try {
-        const data = JSON.parse(body);
-        if (typeof data.free === 'number' && typeof data.inUse === 'number') {
-          poolStatus.free = data.free;
-          poolStatus.inUse = data.inUse;
-        }
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ ok: true }));
-      } catch(e) { res.writeHead(400); res.end(); }
-    });
-    return;
-  }
-
   if (req.method === 'POST' && req.url === '/clear-alerts') {
     try {
       await db.query("DELETE FROM cashouts WHERE tab_id LIKE 'ID:%'");
@@ -256,8 +240,7 @@ const server = http.createServer(async (req, res) => {
       const totals = await getTotals();
       const cashouts = await getCashouts();
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      // Send track records alongside current status pool matrix
-      res.end(JSON.stringify({ totals, cashouts, tabs, poolStatus }));
+      res.end(JSON.stringify({ totals, cashouts, tabs }));
     } catch(e) { console.error(e); res.writeHead(500); res.end(); }
     return;
   }
