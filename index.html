@@ -13,7 +13,7 @@
   .login-card { background: #fff; border-radius: 24px; padding: 40px 32px; width: 100%; max-width: 360px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); text-align: center; }
   .login-card h2 { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
   .login-card p { font-size: 13px; color: #94a3b8; margin-bottom: 28px; }
-  .login-card input { width: 100%; padding: 14px 44px 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; color: #0f172a; outline: none; text-align: center; letter-spacing: 4px; transition: border-color 0.2s; margin-bottom: 0; }
+  .login-card input { width: 100%; padding: 14px 44px 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; color: #0f172a; outline: none; text-align: center; letter-spacing: 4px; transition: border-color 0.2s; margin-bottom: 14px; }
   .login-card input:focus { border-color: #10b981; }
   .login-card button { width: 100%; padding: 14px; background: #10b981; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
   .login-error { color: #ef4444; font-size: 13px; margin-top: 12px; display: none; }
@@ -26,19 +26,46 @@
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
   .logout-btn { background: none; border: 1px solid #e2e8f0; color: #94a3b8; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; }
   .content { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* Hero */
   .site-hero { border-radius: 20px 20px 0 0; padding: 20px; color: #fff; }
   .site-hero.mwos { background: linear-gradient(135deg, #059669, #10b981); }
   .site-hero.bolabet { background: linear-gradient(135deg, #d97706, #f59e0b); }
   .site-name { font-size: 11px; font-weight: 800; letter-spacing: 3px; opacity: 0.8; margin-bottom: 12px; }
   .today-label { font-size: 9px; letter-spacing: 3px; opacity: 0.6; margin-bottom: 4px; }
   .today-amount { font-size: 52px; font-weight: 900; line-height: 1; margin-bottom: 2px; }
-  .today-currency { font-size: 11px; opacity: 0.6; margin-bottom: 14px; }
-  .week-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  .month-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .today-currency { font-size: 11px; opacity: 0.6; margin-bottom: 6px; }
+
+  /* Flow arrows */
+  .flow-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; opacity: 0.9; }
+  .flow-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; opacity: 0.7; white-space: nowrap; }
+  .flow-arrow { display: flex; align-items: center; gap: 4px; flex: 1; }
+  .flow-line { flex: 1; height: 2px; background: rgba(255,255,255,0.3); border-radius: 2px; position: relative; overflow: visible; }
+  .flow-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.9); position: absolute; top: 50%; transform: translateY(-50%); animation: flowmove 1.8s linear infinite; }
+  .flow-dot:nth-child(2) { animation-delay: 0.6s; }
+  .flow-dot:nth-child(3) { animation-delay: 1.2s; }
+  @keyframes flowmove { 0%{left:-6px;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{left:100%;opacity:0} }
+  .flow-target { font-size: 9px; font-weight: 800; letter-spacing: 1px; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+  .arrow-head { font-size: 10px; opacity: 0.8; }
+
+  /* Period grids */
+  .grid-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; position: relative; margin-bottom: 8px; }
   .period-box { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; }
+  .period-box.active-box { background: rgba(255,255,255,0.28); border: 1.5px solid rgba(255,255,255,0.5); }
   .period-label { font-size: 9px; letter-spacing: 2px; opacity: 0.65; margin-bottom: 4px; }
   .period-val { font-size: 20px; font-weight: 900; }
   .period-sub { font-size: 9px; opacity: 0.5; margin-top: 2px; }
+
+  /* Box connector between period boxes */
+  .box-connector { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; z-index: 2; pointer-events: none; }
+  .connector-label { font-size: 7px; font-weight: 800; letter-spacing: 1px; opacity: 0.65; margin-bottom: 3px; white-space: nowrap; background: rgba(0,0,0,0.15); padding: 2px 5px; border-radius: 4px; }
+  .h-flow-line { width: 28px; height: 2px; background: rgba(255,255,255,0.35); border-radius: 2px; position: relative; overflow: visible; }
+  .h-flow-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.9); position: absolute; top: 50%; transform: translateY(-50%); animation: hflow 1.8s linear infinite; }
+  .h-flow-dot:nth-child(2) { animation-delay: 0.9s; }
+  @keyframes hflow { 0%{left:-5px;opacity:0} 15%{opacity:1} 85%{opacity:1} 100%{left:100%;opacity:0} }
+  .h-arrow { font-size: 9px; opacity: 0.8; margin-left: 1px; }
+
+  /* Stats card */
   .site-stats-card { background: #fff; border-radius: 0 0 16px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: grid; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 20px; overflow: hidden; }
   .site-stat { padding: 14px 12px; text-align: center; border-right: 1px solid #f8fafc; }
   .site-stat:last-child { border-right: none; }
@@ -46,6 +73,8 @@
   .site-stat-val { font-size: 24px; font-weight: 900; color: #0f172a; }
   .site-stat-val.green { color: #10b981; }
   .site-stat-val.yellow { color: #f59e0b; }
+
+  /* Alerts */
   .alerts-section { margin-bottom: 20px; }
   .reveal-btn { width: 100%; background: #1e293b; color: #fff; border: none; padding: 14px 16px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .reveal-btn:active { opacity: 0.85; }
@@ -98,6 +127,7 @@
     <div class="login-error" id="login-error">❌ Wrong password</div>
   </div>
 </div>
+
 <div id="main-screen">
   <div class="topbar">
     <div>
@@ -109,60 +139,162 @@
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </div>
+
   <div class="content">
+
+    <!-- MWOS -->
     <div class="site-hero mwos">
       <div class="site-name">MWOS</div>
       <div class="today-label">TODAY'S PROFIT</div>
       <div class="today-amount" id="mwos-today">0</div>
       <div class="today-currency">Zambian Kwacha (ZMW)</div>
-      <div class="week-grid">
-        <div class="period-box"><div class="period-label">THIS WEEK</div><div class="period-val" id="mwos-this-week">0</div><div class="period-sub">ZMW — resets Saturday</div></div>
-        <div class="period-box"><div class="period-label">LAST WEEK</div><div class="period-val" id="mwos-last-week">0</div><div class="period-sub">ZMW</div></div>
+
+      <div class="flow-row">
+        <div class="flow-label">ADDING TO</div>
+        <div class="flow-arrow">
+          <div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div>
+          <div class="arrow-head">▶</div>
+        </div>
+        <div class="flow-target">THIS WEEK</div>
+        <div style="width:8px;"></div>
+        <div class="flow-arrow">
+          <div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div>
+          <div class="arrow-head">▶</div>
+        </div>
+        <div class="flow-target">THIS MONTH</div>
       </div>
-      <div style="height:8px;"></div>
-      <div class="month-grid">
-        <div class="period-box"><div class="period-label">THIS MONTH</div><div class="period-val" id="mwos-this-month">0</div><div class="period-sub">ZMW — resets on 1st</div></div>
-        <div class="period-box"><div class="period-label">LAST MONTH</div><div class="period-val" id="mwos-last-month">0</div><div class="period-sub">ZMW</div></div>
+
+      <div class="grid-wrapper">
+        <div class="period-box active-box">
+          <div class="period-label">THIS WEEK</div>
+          <div class="period-val" id="mwos-this-week">0</div>
+          <div class="period-sub">ZMW — resets Sunday</div>
+        </div>
+        <div class="period-box">
+          <div class="period-label">LAST WEEK</div>
+          <div class="period-val" id="mwos-last-week">0</div>
+          <div class="period-sub">ZMW</div>
+        </div>
+        <div class="box-connector">
+          <div class="connector-label">ON SUNDAY</div>
+          <div style="display:flex;align-items:center;">
+            <div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div>
+            <div class="h-arrow">▶</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-wrapper">
+        <div class="period-box active-box">
+          <div class="period-label">THIS MONTH</div>
+          <div class="period-val" id="mwos-this-month">0</div>
+          <div class="period-sub">ZMW — resets on 1st</div>
+        </div>
+        <div class="period-box">
+          <div class="period-label">LAST MONTH</div>
+          <div class="period-val" id="mwos-last-month">0</div>
+          <div class="period-sub">ZMW</div>
+        </div>
+        <div class="box-connector">
+          <div class="connector-label">ON 1ST</div>
+          <div style="display:flex;align-items:center;">
+            <div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div>
+            <div class="h-arrow">▶</div>
+          </div>
+        </div>
       </div>
     </div>
+
     <div class="site-stats-card">
       <div class="site-stat"><div class="site-stat-label">CASHOUTS</div><div class="site-stat-val" id="mwos-cashouts">0</div></div>
       <div class="site-stat"><div class="site-stat-label">ACTIVE TABS</div><div class="site-stat-val green" id="mwos-tabs">0</div></div>
       <div class="site-stat"><div class="site-stat-label">AVG / WIN</div><div class="site-stat-val" id="mwos-avg">0</div></div>
     </div>
+
+    <!-- BOLABET -->
     <div class="site-hero bolabet">
       <div class="site-name">BOLABET</div>
       <div class="today-label">TODAY'S PROFIT</div>
       <div class="today-amount" id="bolabet-today">0</div>
       <div class="today-currency">Zambian Kwacha (ZMW)</div>
-      <div class="week-grid">
-        <div class="period-box"><div class="period-label">THIS WEEK</div><div class="period-val" id="bolabet-this-week">0</div><div class="period-sub">ZMW — resets Saturday</div></div>
-        <div class="period-box"><div class="period-label">LAST WEEK</div><div class="period-val" id="bolabet-last-week">0</div><div class="period-sub">ZMW</div></div>
+
+      <div class="flow-row">
+        <div class="flow-label">ADDING TO</div>
+        <div class="flow-arrow">
+          <div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div>
+          <div class="arrow-head">▶</div>
+        </div>
+        <div class="flow-target">THIS WEEK</div>
+        <div style="width:8px;"></div>
+        <div class="flow-arrow">
+          <div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div>
+          <div class="arrow-head">▶</div>
+        </div>
+        <div class="flow-target">THIS MONTH</div>
       </div>
-      <div style="height:8px;"></div>
-      <div class="month-grid">
-        <div class="period-box"><div class="period-label">THIS MONTH</div><div class="period-val" id="bolabet-this-month">0</div><div class="period-sub">ZMW — resets on 1st</div></div>
-        <div class="period-box"><div class="period-label">LAST MONTH</div><div class="period-val" id="bolabet-last-month">0</div><div class="period-sub">ZMW</div></div>
+
+      <div class="grid-wrapper">
+        <div class="period-box active-box">
+          <div class="period-label">THIS WEEK</div>
+          <div class="period-val" id="bolabet-this-week">0</div>
+          <div class="period-sub">ZMW — resets Sunday</div>
+        </div>
+        <div class="period-box">
+          <div class="period-label">LAST WEEK</div>
+          <div class="period-val" id="bolabet-last-week">0</div>
+          <div class="period-sub">ZMW</div>
+        </div>
+        <div class="box-connector">
+          <div class="connector-label">ON SUNDAY</div>
+          <div style="display:flex;align-items:center;">
+            <div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div>
+            <div class="h-arrow">▶</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-wrapper">
+        <div class="period-box active-box">
+          <div class="period-label">THIS MONTH</div>
+          <div class="period-val" id="bolabet-this-month">0</div>
+          <div class="period-sub">ZMW — resets on 1st</div>
+        </div>
+        <div class="period-box">
+          <div class="period-label">LAST MONTH</div>
+          <div class="period-val" id="bolabet-last-month">0</div>
+          <div class="period-sub">ZMW</div>
+        </div>
+        <div class="box-connector">
+          <div class="connector-label">ON 1ST</div>
+          <div style="display:flex;align-items:center;">
+            <div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div>
+            <div class="h-arrow">▶</div>
+          </div>
+        </div>
       </div>
     </div>
+
     <div class="site-stats-card">
       <div class="site-stat"><div class="site-stat-label">CASHOUTS</div><div class="site-stat-val" id="bolabet-cashouts">0</div></div>
       <div class="site-stat"><div class="site-stat-label">ACTIVE TABS</div><div class="site-stat-val yellow" id="bolabet-tabs">0</div></div>
       <div class="site-stat"><div class="site-stat-label">AVG / WIN</div><div class="site-stat-val" id="bolabet-avg">0</div></div>
     </div>
+
     <div class="alerts-section">
-      <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+      <div style="display:flex;gap:10px;margin-bottom:12px;">
         <button class="reveal-btn" id="reveal-btn" onclick="showPanel()">👁️ View IDs &amp; Numbers</button>
-        <button class="reveal-btn" style="background: #ef4444; width: auto; padding: 14px 20px;" onclick="triggerDepositClear()">🔄 Deposit / Clear</button>
+        <button class="reveal-btn" style="background:#ef4444;width:auto;padding:14px 20px;" onclick="triggerDepositClear()">🔄 Deposit / Clear</button>
       </div>
       <div id="alerts-panel">
         <button class="hide-btn" onclick="hidePanel()">🔒 Hide IDs &amp; Numbers</button>
         <div id="alerts-container"></div>
       </div>
     </div>
+
     <div class="bottom-space"></div>
   </div>
 </div>
+
 <div class="note-printable" id="note-printable">
   <div class="note-title" id="note-title"></div>
   <div class="note-date" id="note-date"></div>
@@ -170,19 +302,19 @@
   <div id="note-rows"></div>
   <div class="note-footer">Mwos/Bolabet Withdraw Tracker</div>
 </div>
+
 <script>
   const BOX_SIZE = 30;
   let isLoggedIn = sessionStorage.getItem('aviator_auth') === 'true';
-  let lastClearTimestamp = 0;
 
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
-  
+
   function showDashboard() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('main-screen').style.display = 'block';
     poll();
   }
-  
+
   function login() {
     const pw = document.getElementById('password-input').value;
     fetch('/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) })
@@ -193,45 +325,45 @@
     })
     .catch(() => { document.getElementById('login-error').style.display = 'block'; });
   }
-  
+
   function logout() {
     sessionStorage.removeItem('aviator_auth'); isLoggedIn = false;
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('main-screen').style.display = 'none';
     document.getElementById('password-input').value = '';
   }
-  
+
   function togglePw() {
     const input = document.getElementById('password-input');
     input.type = input.type === 'password' ? 'text' : 'password';
   }
-  
+
   function showPanel() {
     document.getElementById('reveal-btn').style.display = 'none';
     document.getElementById('alerts-panel').style.display = 'block';
   }
-  
+
   function hidePanel() {
     document.getElementById('alerts-panel').style.display = 'none';
     document.getElementById('reveal-btn').style.display = 'flex';
   }
-  
+
   function parseTabId(tabId) {
     const match = tabId.match(/ID:\s*(\S+)\s*\(([^)]+)\)/);
     if (match) return { id: match[1], phone: match[2] };
     return { id: tabId, phone: '—' };
   }
-  
+
   function nowStr() {
     return new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
-  
+
   function renderNote(title, rows) {
     document.getElementById('note-title').textContent = title;
     document.getElementById('note-date').textContent = nowStr();
     document.getElementById('note-rows').innerHTML = rows;
   }
-  
+
   function downloadImage(filename) {
     const el = document.getElementById('note-printable');
     html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
@@ -241,7 +373,7 @@
       link.click();
     });
   }
-  
+
   function saveIds(boxIndex, accounts) {
     renderNote('BOX ' + (boxIndex + 1) + ' — IDs (' + accounts.length + '/' + BOX_SIZE + ' FULL)',
       accounts.map(function(c, i) {
@@ -250,7 +382,7 @@
       }).join(''));
     downloadImage('box-' + (boxIndex + 1) + '-ids.png');
   }
-  
+
   function saveAll(boxIndex, accounts) {
     renderNote('BOX ' + (boxIndex + 1) + ' — IDs & Numbers (' + accounts.length + '/' + BOX_SIZE + ' FULL)',
       accounts.map(function(c, i) {
@@ -263,17 +395,14 @@
   function triggerDepositClear() {
     const enteredCode = prompt("Enter system security PIN to clear tracked data channels:");
     if (enteredCode === null) return;
-    
     if (enteredCode === "1234") {
       fetch('/clear-alerts', { method: 'POST' })
       .then(() => {
-        // Sets the baseline to zero so the page prints everything coming in instantly right after cleaning!
-        lastClearTimestamp = 0;
         window._boxes = [];
         document.getElementById('alerts-container').innerHTML = '<div class="empty-alerts">Waiting for low balance accounts...</div>';
         alert("Alert container completely cleared. Ready for fresh records!");
       })
-      .catch(() => alert("Error: Communication failed. Core state untouched."));
+      .catch(() => alert("Error: Communication failed."));
     } else {
       alert("❌ Invalid PIN! Storage logs securely locked.");
     }
@@ -313,45 +442,46 @@
       var res = await fetch('/state');
       var data = await res.json();
       if (data.error) { setTimeout(poll, 3000); return; }
-      var totals = data.totals; var cashouts = data.cashouts; var tabs = data.tabs;
+      var totals = data.totals;
+      var cashouts = data.cashouts;
+      var tabs = data.tabs;
+
       var mwosTabs = Object.entries(tabs).filter(function(e) { return e[1].site !== 'bolabet'; });
       var bolabtTabs = Object.entries(tabs).filter(function(e) { return e[1].site === 'bolabet'; });
       var mwosCashouts = cashouts.filter(function(c) { return c.site !== 'bolabet' && !c.tabId.startsWith('ID:'); });
       var bolabtCashouts = cashouts.filter(function(c) { return c.site === 'bolabet' && !c.tabId.startsWith('ID:'); });
+
       var today = new Date().toDateString();
       var mwosToday = mwosCashouts.filter(function(c) { return new Date(c.timestamp).toDateString() === today; });
       var bolabtToday = bolabtCashouts.filter(function(c) { return new Date(c.timestamp).toDateString() === today; });
-      var mwosAvg = mwosToday.length > 0 ? Math.round(totals.mwos.today / mwosToday.length) : 0;
-      var bolabtAvg = bolabtToday.length > 0 ? Math.round(totals.bolabet.today / bolabtToday.length) : 0;
-      
-      document.getElementById('mwos-today').textContent = fmt(totals.mwos.today);
-      document.getElementById('mwos-this-week').textContent = fmt(totals.mwos.thisWeek);
-      document.getElementById('mwos-last-week').textContent = fmt(totals.mwos.lastWeek || 0);
-      document.getElementById('mwos-this-month').textContent = fmt(totals.mwos.thisMonth);
-      document.getElementById('mwos-last-month').textContent = fmt(totals.mwos.lastMonth || 0);
+
+      var mwosAvg = mwosToday.length > 0 ? Math.round(mwosToday.reduce(function(s,c){return s+c.amount;},0)/mwosToday.length) : 0;
+      var bolabtAvg = bolabtToday.length > 0 ? Math.round(bolabtToday.reduce(function(s,c){return s+c.amount;},0)/bolabtToday.length) : 0;
+
+      var mt = totals.mwos || {};
+      var bt = totals.bolabet || {};
+
+      document.getElementById('mwos-today').textContent = fmt(mt.today || 0);
+      document.getElementById('mwos-this-week').textContent = fmt(mt.thisWeek || 0);
+      document.getElementById('mwos-last-week').textContent = fmt(mt.lastWeek || 0);
+      document.getElementById('mwos-this-month').textContent = fmt(mt.thisMonth || 0);
+      document.getElementById('mwos-last-month').textContent = fmt(mt.lastMonth || 0);
       document.getElementById('mwos-cashouts').textContent = mwosCashouts.length;
       document.getElementById('mwos-tabs').textContent = mwosTabs.length;
       document.getElementById('mwos-avg').textContent = fmt(mwosAvg);
-      
-      document.getElementById('bolabet-today').textContent = fmt(totals.bolabet.today);
-      document.getElementById('bolabet-this-week').textContent = fmt(totals.bolabet.thisWeek);
-      document.getElementById('bolabet-last-week').textContent = fmt(totals.bolabet.lastWeek || 0);
-      document.getElementById('bolabet-this-month').textContent = fmt(totals.bolabet.thisMonth);
-      document.getElementById('bolabet-last-month').textContent = fmt(totals.bolabet.lastMonth || 0);
+
+      document.getElementById('bolabet-today').textContent = fmt(bt.today || 0);
+      document.getElementById('bolabet-this-week').textContent = fmt(bt.thisWeek || 0);
+      document.getElementById('bolabet-last-week').textContent = fmt(bt.lastWeek || 0);
+      document.getElementById('bolabet-this-month').textContent = fmt(bt.thisMonth || 0);
+      document.getElementById('bolabet-last-month').textContent = fmt(bt.lastMonth || 0);
       document.getElementById('bolabet-cashouts').textContent = bolabtCashouts.length;
       document.getElementById('bolabet-tabs').textContent = bolabtTabs.length;
       document.getElementById('bolabet-avg').textContent = fmt(bolabtAvg);
-      
-      var freshAlerts = cashouts.filter(function(c) {
-        return new Date(c.timestamp).getTime() > lastClearTimestamp;
-      });
-      
-      renderAlerts(freshAlerts);
 
-    } catch(e) {
-      console.error("Polling system interface exception:", e);
-    }
-    setTimeout(poll, 1000);
+      renderAlerts(cashouts);
+    } catch(e) { console.error(e); }
+    setTimeout(poll, 3000);
   }
 </script>
 </body>
