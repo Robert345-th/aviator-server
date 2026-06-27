@@ -65,6 +65,16 @@ async function initDB() {
       created_at TIMESTAMP DEFAULT NOW()
     )
   `);
+  
+  // Create our login_pool tracking engine for the 450 items scale
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS login_pool (
+      phone_number TEXT PRIMARY KEY,
+      assigned_tab_id TEXT DEFAULT NULL,
+      last_assigned_at BIGINT DEFAULT 0
+    )
+  `);
+
   await db.query(`INSERT INTO totals (site) VALUES ('mwos') ON CONFLICT DO NOTHING`);
   await db.query(`INSERT INTO totals (site) VALUES ('bolabet') ON CONFLICT DO NOTHING`);
   console.log('Database ready!');
@@ -162,6 +172,62 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: password === PASSWORD }));
       } catch(e) { res.writeHead(400); res.end(); }
+    });
+    return;
+  }
+
+  // ===================================================================
+  // 📱 NEW ROUTE: POOL DASHBOARD TELEMETRY (SAFE INTERNAL ENGINE addition)
+  // ===================================================================
+  if (req.method === 'GET' && req.url === '/api/pool-status') {
+    try {
+        const poolQuery = await db.query('SELECT phone_number, assigned_tab_id, last_assigned_at FROM login_pool ORDER BY phone_number ASC');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, pool: poolQuery.rows }));
+    } catch(err) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ ok: false }));
+    }
+    return;
+  }
+
+  // ===================================================================
+  // 🎰 NEW ROUTE: DISPATCH NEXT FREE NUMBER TO MULTI-TABS (300 Tabs Pool)
+  // ===================================================================
+  if (req.method === 'POST' && req.url === '/request-number') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', async () => {
+        try {
+            const { tabId } = JSON.parse(body);
+            const stamp = Date.now();
+
+            // Clear any dead allocations older than our heartbeat threshold
+            await db.query('UPDATE login_pool SET assigned_tab_id = NULL WHERE assigned_tab_id IS NOT NULL AND ($1 - last_assigned_at) > $2', [stamp, TIMEOUT_MS]);
+
+            // Check if tab holds a claim already
+            let existing = await db.query('SELECT phone_number FROM login_pool WHERE assigned_tab_id = $1', [tabId]);
+            if (existing.rows.length > 0) {
+                await db.query('UPDATE login_pool SET last_assigned_at = $1 WHERE assigned_tab_id = $2', [stamp, tabId]);
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true, phoneNumber: existing.rows[0].phone_number }));
+                return;
+            }
+
+            // Find next completely available channel entry
+            let nextFree = await db.query('SELECT phone_number FROM login_pool WHERE assigned_tab_id IS NULL LIMIT 1 FOR UPDATE SKIP LOCKED');
+            if (nextFree.rows.length > 0) {
+                const targetNum = nextFree.rows[0].phone_number;
+                await db.query('UPDATE login_pool SET assigned_tab_id = $1, last_assigned_at = $2 WHERE phone_number = $3', [tabId, stamp, targetNum]);
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true, phoneNumber: targetNum }));
+            } else {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'All numbers occupied' }));
+            }
+        } catch(e) {
+            res.writeHead(500); res.end();
+        }
     });
     return;
   }
