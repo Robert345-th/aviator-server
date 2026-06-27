@@ -36,6 +36,7 @@
   .login-card button.unlock-btn { width: 100%; padding: 14px; background: #10b981; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
   .login-error { color: #ef4444; font-size: 13px; margin-top: 12px; display: none; }
   .fp-status { font-size: 12px; margin-top: 10px; min-height: 18px; color: #94a3b8; }
+  .fp-not-supported { font-size: 11px; color: #f59e0b; margin-bottom: 12px; }
 
   #main-screen { display: none; }
   .topbar { background: #fff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 10; transition: background 0.3s, border-color 0.3s; }
@@ -115,16 +116,6 @@
   .reveal-btn:active { opacity: 0.85; }
   #alerts-panel { display: none; margin-top: 12px; }
   .hide-btn { width: 100%; background: #0f172a; color: #fff; border: none; padding: 12px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; }
-  
-  /* Modern Real-time Login Pool widget styling */
-  .pool-status-card { background: #111827; border-radius: 16px; padding: 16px; margin-bottom: 20px; border: 1px solid #1f2937; }
-  .pool-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-  .pool-title { font-size: 14px; font-weight: 800; color: #38bdf8; letter-spacing: 0.5px; }
-  .pool-metrics { display: flex; gap: 8px; margin-left: auto; }
-  .pool-badge { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; min-width: 65px; text-align: center; }
-  .pool-badge.free { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-  .pool-badge.inuse { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
-
   .box-wrapper { margin-bottom: 16px; }
   .box-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #0f172a; border-radius: 14px 14px 0 0; }
   .box-title { font-size: 12px; font-weight: 800; color: #f1f5f9; letter-spacing: 2px; }
@@ -168,14 +159,18 @@
   <div class="login-card">
     <h2>✈️ Mwos/Bolabet</h2>
     <p>Withdraw Tracker — Unlock to continue</p>
+
+    <!-- Fingerprint button -->
     <div class="fingerprint-btn" id="fp-btn" onclick="fingerprintLogin()">👆</div>
     <div class="fp-hint" id="fp-hint">Tap to use fingerprint</div>
     <div class="fp-status" id="fp-status"></div>
+
     <div class="divider">
       <div class="divider-line"></div>
       <div class="divider-text">OR USE PASSWORD</div>
       <div class="divider-line"></div>
     </div>
+
     <div style="display:flex;align-items:center;background:#f1f5f9;border-radius:12px;padding:14px 16px;margin-bottom:14px;gap:12px;">
       <span style="font-size:18px;opacity:0.45;">🔒</span>
       <input type="password" id="password-input" placeholder="Password" onkeydown="if(event.key==='Enter')login()" style="border:none;background:transparent;font-size:15px;color:#0f172a;outline:none;flex:1;letter-spacing:2px;font-family:inherit;">
@@ -200,6 +195,8 @@
   </div>
 
   <div class="content">
+
+    <!-- MWOS -->
     <div class="site-hero mwos">
       <div class="site-name">MWOS</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -235,6 +232,7 @@
       <div class="site-stat"><div class="site-stat-label">BIGGEST WIN</div><div class="site-stat-val" id="mwos-biggest">0</div></div>
     </div>
 
+    <!-- BOLABET -->
     <div class="site-hero bolabet">
       <div class="site-name">BOLABET</div>
       <div class="today-label">TODAY'S PROFIT</div>
@@ -270,17 +268,6 @@
       <div class="site-stat"><div class="site-stat-label">BIGGEST WIN</div><div class="site-stat-val" id="bolabet-biggest">0</div></div>
     </div>
 
-    <div class="pool-status-card">
-      <div class="pool-header">
-        <span style="font-size:16px;">📱</span>
-        <div class="pool-title">Real-Time Login Pool Status</div>
-        <div class="pool-metrics">
-          <div class="pool-badge free">Free: <span id="pool-free-val">0</span></div>
-          <div class="pool-badge inuse">In-Use: <span id="pool-inuse-val">0</span></div>
-        </div>
-      </div>
-    </div>
-
     <div class="alerts-section">
       <div style="display:flex;gap:10px;margin-bottom:12px;">
         <button class="reveal-btn" id="reveal-btn" onclick="showPanel()">👁️ View IDs &amp; Numbers</button>
@@ -311,6 +298,7 @@
   const CRED_KEY = 'fp_cred_id';
   let isLoggedIn = sessionStorage.getItem('aviator_auth') === 'true';
 
+  // Dark mode
   function applyDark(dark) {
     document.body.classList.toggle('dark', dark);
     document.getElementById('dark-btn').textContent = dark ? '☀️' : '🌙';
@@ -324,6 +312,7 @@
 
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
 
+  // ── Fingerprint / WebAuthn ──────────────────────────────────────
   function b64url(buf) {
     return btoa(String.fromCharCode(...new Uint8Array(buf)))
       .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
@@ -360,17 +349,29 @@
   async function fingerprintLogin() {
     const btn = document.getElementById('fp-btn');
     const status = document.getElementById('fp-status');
-    if (!window.PublicKeyCredential) { status.textContent = '⚠️ Biometrics not supported'; return; }
-    const savedId = localStorage.getItem(CRED_KEY);
 
-    if (!savedId) {
-      status.textContent = 'Setting up fingerprint...';
-      const ok = await registerFingerprint();
-      if (ok) { status.textContent = 'Fingerprint saved! Tap again to login.'; } 
-      else { status.textContent = '❌ Setup failed.'; btn.className = 'fingerprint-btn error'; setTimeout(() => btn.className = 'fingerprint-btn', 1000); }
+    if (!window.PublicKeyCredential) {
+      status.textContent = '⚠️ Biometrics not supported on this browser';
       return;
     }
 
+    const savedId = localStorage.getItem(CRED_KEY);
+
+    // No fingerprint registered yet — register first
+    if (!savedId) {
+      status.textContent = 'Setting up fingerprint...';
+      const ok = await registerFingerprint();
+      if (ok) {
+        status.textContent = 'Fingerprint saved! Tap again to login.';
+      } else {
+        status.textContent = '❌ Setup failed. Use password instead.';
+        btn.className = 'fingerprint-btn error';
+        setTimeout(() => btn.className = 'fingerprint-btn', 1000);
+      }
+      return;
+    }
+
+    // Authenticate with saved fingerprint
     try {
       status.textContent = 'Verifying...';
       const challenge = crypto.getRandomValues(new Uint8Array(32));
@@ -387,21 +388,23 @@
       status.textContent = '✅ Verified!';
       setTimeout(() => { sessionStorage.setItem('aviator_auth', 'true'); isLoggedIn = true; showDashboard(); }, 400);
     } catch(e) {
-      status.textContent = '❌ Failed.';
+      status.textContent = '❌ Failed. Try again or use password.';
       btn.className = 'fingerprint-btn error';
       setTimeout(() => { btn.className = 'fingerprint-btn'; status.textContent = ''; }, 1500);
     }
   }
 
+  // Check if WebAuthn supported on load
   if (!window.PublicKeyCredential) {
     document.getElementById('fp-btn').style.opacity = '0.4';
-    document.getElementById('fp-hint').textContent = '⚠️ Fingerprint not supported';
+    document.getElementById('fp-hint').textContent = '⚠️ Fingerprint not supported on this browser';
   } else if (localStorage.getItem(CRED_KEY)) {
     document.getElementById('fp-hint').textContent = 'Tap to unlock with fingerprint';
   } else {
     document.getElementById('fp-hint').textContent = 'Tap to register your fingerprint';
   }
 
+  // ── Password login ──────────────────────────────────────────────
   function showDashboard() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('main-screen').style.display = 'block';
@@ -423,6 +426,9 @@
     sessionStorage.removeItem('aviator_auth'); isLoggedIn = false;
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('main-screen').style.display = 'none';
+    document.getElementById('password-input').value = '';
+    document.getElementById('fp-btn').className = 'fingerprint-btn';
+    document.getElementById('fp-status').textContent = '';
   }
 
   function togglePw() {
@@ -430,6 +436,7 @@
     input.type = input.type === 'password' ? 'text' : 'password';
   }
 
+  // ── Goal bar ────────────────────────────────────────────────────
   function updateGoal(site, today, goal) {
     const pct = Math.min(100, Math.round((today / goal) * 100));
     const remain = Math.max(0, goal - today);
@@ -524,13 +531,6 @@
       var res = await fetch('/state');
       var data = await res.json();
       if (data.error) { setTimeout(poll, 3000); return; }
-      
-      // Update real-time pool metrics panel smoothly
-      if (data.poolStatus) {
-        document.getElementById('pool-free-val').textContent = data.poolStatus.free || 0;
-        document.getElementById('pool-inuse-val').textContent = data.poolStatus.inUse || 0;
-      }
-
       var totals = data.totals; var cashouts = data.cashouts; var tabs = data.tabs;
       var mwosTabs = Object.entries(tabs).filter(function(e){ return e[1].site !== 'bolabet'; });
       var bolabtTabs = Object.entries(tabs).filter(function(e){ return e[1].site === 'bolabet'; });
@@ -542,7 +542,6 @@
       var mwosBiggest = mwosToday.length > 0 ? Math.max.apply(null, mwosToday.map(function(c){return c.amount;})) : 0;
       var bolabtBiggest = bolabtToday.length > 0 ? Math.max.apply(null, bolabtToday.map(function(c){return c.amount;})) : 0;
       var mt = totals.mwos || {}; var bt = totals.bolabet || {};
-      
       document.getElementById('mwos-today').textContent = fmt(mt.today||0);
       document.getElementById('mwos-this-week').textContent = fmt(mt.thisWeek||0);
       document.getElementById('mwos-last-week').textContent = fmt(mt.lastWeek||0);
@@ -552,7 +551,6 @@
       document.getElementById('mwos-tabs').textContent = mwosTabs.length;
       document.getElementById('mwos-biggest').textContent = fmt(mwosBiggest);
       updateGoal('mwos', mt.today||0, MWOS_GOAL);
-      
       document.getElementById('bolabet-today').textContent = fmt(bt.today||0);
       document.getElementById('bolabet-this-week').textContent = fmt(bt.thisWeek||0);
       document.getElementById('bolabet-last-week').textContent = fmt(bt.lastWeek||0);
@@ -562,7 +560,6 @@
       document.getElementById('bolabet-tabs').textContent = bolabtTabs.length;
       document.getElementById('bolabet-biggest').textContent = fmt(bolabtBiggest);
       updateGoal('bolabet', bt.today||0, BOLABET_GOAL);
-      
       renderAlerts(cashouts);
     } catch(e) { console.error(e); }
     setTimeout(poll, 3000);
