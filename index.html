@@ -8,23 +8,41 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #f1f5f9; font-family: 'Inter', sans-serif; min-height: 100vh; }
+  body { background: #f1f5f9; font-family: 'Inter', sans-serif; min-height: 100vh; transition: background 0.3s; }
+  body.dark { background: #0f172a; }
+
+  /* Login */
   #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-  .login-card { background: #fff; border-radius: 24px; padding: 40px 32px; width: 100%; max-width: 360px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); text-align: center; }
+  .login-card { background: #fff; border-radius: 24px; padding: 40px 32px; width: 100%; max-width: 360px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); text-align: center; transition: background 0.3s; }
+  body.dark .login-card { background: #1e293b; }
   .login-card h2 { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+  body.dark .login-card h2 { color: #f1f5f9; }
   .login-card p { font-size: 13px; color: #94a3b8; margin-bottom: 28px; }
-  .login-card input { width: 100%; padding: 14px 44px 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; color: #0f172a; outline: none; text-align: center; letter-spacing: 4px; transition: border-color 0.2s; margin-bottom: 14px; }
+  .login-card input { width: 100%; padding: 14px 44px 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; color: #0f172a; outline: none; text-align: center; letter-spacing: 4px; transition: border-color 0.2s; margin-bottom: 14px; background: #fff; }
+  body.dark .login-card input { background: #0f172a; border-color: #334155; color: #f1f5f9; }
   .login-card input:focus { border-color: #10b981; }
   .login-card button { width: 100%; padding: 14px; background: #10b981; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
   .login-error { color: #ef4444; font-size: 13px; margin-top: 12px; display: none; }
+
   #main-screen { display: none; }
-  .topbar { background: #fff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 10; }
+
+  /* Topbar */
+  .topbar { background: #fff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 10; transition: background 0.3s, border-color 0.3s; }
+  body.dark .topbar { background: #1e293b; border-bottom-color: #334155; }
   .topbar-title { font-size: 16px; font-weight: 800; color: #0f172a; }
+  body.dark .topbar-title { color: #f1f5f9; }
   .topbar-sub { font-size: 11px; color: #94a3b8; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
   .live-badge { display: flex; align-items: center; gap: 6px; background: #ecfdf5; color: #059669; font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 20px; }
   .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #10b981; animation: pulse 1.2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
   .logout-btn { background: none; border: 1px solid #e2e8f0; color: #94a3b8; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; }
+  body.dark .logout-btn { border-color: #334155; }
+
+  /* Dark mode toggle */
+  .dark-toggle { background: none; border: 1px solid #e2e8f0; color: #94a3b8; padding: 6px 10px; border-radius: 8px; font-size: 15px; cursor: pointer; }
+  body.dark .dark-toggle { border-color: #334155; }
+
   .content { padding: 16px; max-width: 600px; margin: 0 auto; }
 
   /* Hero */
@@ -34,7 +52,20 @@
   .site-name { font-size: 11px; font-weight: 800; letter-spacing: 3px; opacity: 0.8; margin-bottom: 12px; }
   .today-label { font-size: 9px; letter-spacing: 3px; opacity: 0.6; margin-bottom: 4px; }
   .today-amount { font-size: 52px; font-weight: 900; line-height: 1; margin-bottom: 2px; }
-  .today-currency { font-size: 11px; opacity: 0.6; margin-bottom: 6px; }
+  .today-currency { font-size: 11px; opacity: 0.6; margin-bottom: 14px; }
+
+  /* Goal bar */
+  .goal-box { background: rgba(0,0,0,0.15); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; }
+  .goal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .goal-label { font-size: 10px; font-weight: 800; letter-spacing: 2px; }
+  .goal-amounts { font-size: 11px; font-weight: 900; }
+  .goal-bar-bg { background: rgba(255,255,255,0.2); border-radius: 99px; height: 10px; overflow: hidden; margin-bottom: 7px; }
+  .goal-bar-fill { height: 100%; border-radius: 99px; background: #fff; transition: width 0.6s ease; }
+  .goal-bar-fill.done { background: #fbbf24; box-shadow: 0 0 8px rgba(251,191,36,0.7); }
+  .goal-bottom { display: flex; justify-content: space-between; align-items: center; }
+  .goal-pct { font-size: 11px; font-weight: 800; opacity: 0.85; }
+  .goal-remain { font-size: 10px; font-weight: 600; opacity: 0.65; }
+  .goal-done-text { font-size: 11px; font-weight: 800; color: #fbbf24; }
 
   /* Flow arrows */
   .flow-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; opacity: 0.9; }
@@ -55,8 +86,6 @@
   .period-label { font-size: 9px; letter-spacing: 2px; opacity: 0.65; margin-bottom: 4px; }
   .period-val { font-size: 20px; font-weight: 900; }
   .period-sub { font-size: 9px; opacity: 0.5; margin-top: 2px; }
-
-  /* Box connector between period boxes */
   .box-connector { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; z-index: 2; pointer-events: none; }
   .connector-label { font-size: 7px; font-weight: 800; letter-spacing: 1px; opacity: 0.65; margin-bottom: 3px; white-space: nowrap; background: rgba(0,0,0,0.15); padding: 2px 5px; border-radius: 4px; }
   .h-flow-line { width: 28px; height: 2px; background: rgba(255,255,255,0.35); border-radius: 2px; position: relative; overflow: visible; }
@@ -66,17 +95,21 @@
   .h-arrow { font-size: 9px; opacity: 0.8; margin-left: 1px; }
 
   /* Stats card */
-  .site-stats-card { background: #fff; border-radius: 0 0 16px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: grid; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 20px; overflow: hidden; }
+  .site-stats-card { background: #fff; border-radius: 0 0 16px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: grid; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 20px; overflow: hidden; transition: background 0.3s; }
+  body.dark .site-stats-card { background: #1e293b; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
   .site-stat { padding: 14px 12px; text-align: center; border-right: 1px solid #f8fafc; }
+  body.dark .site-stat { border-right-color: #334155; }
   .site-stat:last-child { border-right: none; }
   .site-stat-label { font-size: 9px; font-weight: 600; color: #94a3b8; letter-spacing: 1px; margin-bottom: 6px; }
   .site-stat-val { font-size: 24px; font-weight: 900; color: #0f172a; }
+  body.dark .site-stat-val { color: #f1f5f9; }
   .site-stat-val.green { color: #10b981; }
   .site-stat-val.yellow { color: #f59e0b; }
 
   /* Alerts */
   .alerts-section { margin-bottom: 20px; }
   .reveal-btn { width: 100%; background: #1e293b; color: #fff; border: none; padding: 14px 16px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  body.dark .reveal-btn { background: #334155; }
   .reveal-btn:active { opacity: 0.85; }
   #alerts-panel { display: none; margin-top: 12px; }
   .hide-btn { width: 100%; background: #0f172a; color: #fff; border: none; padding: 12px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; }
@@ -87,19 +120,25 @@
   .box-count { font-size: 11px; font-weight: 700; background: #1e293b; color: #94a3b8; padding: 4px 10px; border-radius: 20px; }
   .box-count.full { background: #ef4444; color: #fff; }
   .box-body { background: #fff; border-radius: 0 0 14px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden; }
+  body.dark .box-body { background: #1e293b; }
   .account-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #f1f5f9; gap: 8px; }
+  body.dark .account-row { border-bottom-color: #334155; }
   .account-row:last-child { border-bottom: none; }
   .chips { display: flex; gap: 12px; flex: 1; }
   .chip { background: #f1f5f9; border-radius: 8px; padding: 8px 14px; }
+  body.dark .chip { background: #0f172a; }
   .chip-val { font-size: 13px; font-weight: 800; color: #0f172a; }
+  body.dark .chip-val { color: #f1f5f9; }
   .chip-val.phone { font-family: monospace; font-size: 12px; font-weight: 600; }
   .row-num { font-size: 12px; font-weight: 800; color: #94a3b8; min-width: 24px; text-align: right; }
   .empty-alerts { padding: 24px; text-align: center; color: #cbd5e1; font-size: 13px; background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  body.dark .empty-alerts { background: #1e293b; }
   .box-footer { display: flex; justify-content: space-between; padding: 10px 14px 14px; gap: 10px; }
   .save-btn { display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; border: none; padding: 10px 0; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer; flex: 1; }
   .save-btn.ids { background: #3b82f6; }
   .save-btn.all { background: #10b981; }
   .save-btn:active { opacity: 0.8; }
+
   .note-printable { position: fixed; left: -9999px; top: 0; width: 400px; background: #fff; padding: 32px 28px; font-family: 'Inter', sans-serif; }
   .note-title { font-size: 16px; font-weight: 900; color: #0f172a; margin-bottom: 4px; }
   .note-date { font-size: 11px; color: #94a3b8; margin-bottom: 20px; }
@@ -115,6 +154,7 @@
 </style>
 </head>
 <body>
+
 <div id="login-screen">
   <div class="login-card">
     <h2>✈️ Mwos/Bolabet Withdraw Tracker</h2>
@@ -134,8 +174,9 @@
       <div class="topbar-title">✈️ Mwos/Bolabet Withdraw Tracker</div>
       <div class="topbar-sub">Withdraw Tracker</div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;">
+    <div class="topbar-right">
       <div class="live-badge"><span class="live-dot"></span>LIVE</div>
+      <button class="dark-toggle" onclick="toggleDark()" id="dark-btn">🌙</button>
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </div>
@@ -149,66 +190,45 @@
       <div class="today-amount" id="mwos-today">0</div>
       <div class="today-currency">Zambian Kwacha (ZMW)</div>
 
+      <div class="goal-box">
+        <div class="goal-top">
+          <div class="goal-label">🎯 DAILY GOAL</div>
+          <div class="goal-amounts" id="mwos-goal-amounts">0 / 2,000 ZMW</div>
+        </div>
+        <div class="goal-bar-bg">
+          <div class="goal-bar-fill" id="mwos-goal-bar" style="width:0%;"></div>
+        </div>
+        <div class="goal-bottom">
+          <div class="goal-pct" id="mwos-goal-pct">0%</div>
+          <div class="goal-remain" id="mwos-goal-remain">2,000 ZMW remaining</div>
+        </div>
+      </div>
+
       <div class="flow-row">
         <div class="flow-label">ADDING TO</div>
-        <div class="flow-arrow">
-          <div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div>
-          <div class="arrow-head">▶</div>
-        </div>
+        <div class="flow-arrow"><div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div><div class="arrow-head">▶</div></div>
         <div class="flow-target">THIS WEEK</div>
         <div style="width:8px;"></div>
-        <div class="flow-arrow">
-          <div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div>
-          <div class="arrow-head">▶</div>
-        </div>
+        <div class="flow-arrow"><div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div><div class="arrow-head">▶</div></div>
         <div class="flow-target">THIS MONTH</div>
       </div>
 
       <div class="grid-wrapper">
-        <div class="period-box active-box">
-          <div class="period-label">THIS WEEK</div>
-          <div class="period-val" id="mwos-this-week">0</div>
-          <div class="period-sub">ZMW — resets Sunday</div>
-        </div>
-        <div class="period-box">
-          <div class="period-label">LAST WEEK</div>
-          <div class="period-val" id="mwos-last-week">0</div>
-          <div class="period-sub">ZMW</div>
-        </div>
-        <div class="box-connector">
-          <div class="connector-label">ON SUNDAY</div>
-          <div style="display:flex;align-items:center;">
-            <div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div>
-            <div class="h-arrow">▶</div>
-          </div>
-        </div>
+        <div class="period-box active-box"><div class="period-label">THIS WEEK</div><div class="period-val" id="mwos-this-week">0</div><div class="period-sub">ZMW — resets Sunday</div></div>
+        <div class="period-box"><div class="period-label">LAST WEEK</div><div class="period-val" id="mwos-last-week">0</div><div class="period-sub">ZMW</div></div>
+        <div class="box-connector"><div class="connector-label">ON SUNDAY</div><div style="display:flex;align-items:center;"><div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div><div class="h-arrow">▶</div></div></div>
       </div>
-
       <div class="grid-wrapper">
-        <div class="period-box active-box">
-          <div class="period-label">THIS MONTH</div>
-          <div class="period-val" id="mwos-this-month">0</div>
-          <div class="period-sub">ZMW — resets on 1st</div>
-        </div>
-        <div class="period-box">
-          <div class="period-label">LAST MONTH</div>
-          <div class="period-val" id="mwos-last-month">0</div>
-          <div class="period-sub">ZMW</div>
-        </div>
-        <div class="box-connector">
-          <div class="connector-label">ON 1ST</div>
-          <div style="display:flex;align-items:center;">
-            <div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div>
-            <div class="h-arrow">▶</div>
-          </div>
-        </div>
+        <div class="period-box active-box"><div class="period-label">THIS MONTH</div><div class="period-val" id="mwos-this-month">0</div><div class="period-sub">ZMW — resets on 1st</div></div>
+        <div class="period-box"><div class="period-label">LAST MONTH</div><div class="period-val" id="mwos-last-month">0</div><div class="period-sub">ZMW</div></div>
+        <div class="box-connector"><div class="connector-label">ON 1ST</div><div style="display:flex;align-items:center;"><div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div><div class="h-arrow">▶</div></div></div>
       </div>
     </div>
 
     <div class="site-stats-card">
       <div class="site-stat"><div class="site-stat-label">CASHOUTS</div><div class="site-stat-val" id="mwos-cashouts">0</div></div>
       <div class="site-stat"><div class="site-stat-label">ACTIVE TABS</div><div class="site-stat-val green" id="mwos-tabs">0</div></div>
-      <div class="site-stat"><div class="site-stat-label">AVG / WIN</div><div class="site-stat-val" id="mwos-avg">0</div></div>
+      <div class="site-stat"><div class="site-stat-label">BIGGEST WIN</div><div class="site-stat-val" id="mwos-biggest">0</div></div>
     </div>
 
     <!-- BOLABET -->
@@ -218,66 +238,45 @@
       <div class="today-amount" id="bolabet-today">0</div>
       <div class="today-currency">Zambian Kwacha (ZMW)</div>
 
+      <div class="goal-box">
+        <div class="goal-top">
+          <div class="goal-label">🎯 DAILY GOAL</div>
+          <div class="goal-amounts" id="bolabet-goal-amounts">0 / 900 ZMW</div>
+        </div>
+        <div class="goal-bar-bg">
+          <div class="goal-bar-fill" id="bolabet-goal-bar" style="width:0%;"></div>
+        </div>
+        <div class="goal-bottom">
+          <div class="goal-pct" id="bolabet-goal-pct">0%</div>
+          <div class="goal-remain" id="bolabet-goal-remain">900 ZMW remaining</div>
+        </div>
+      </div>
+
       <div class="flow-row">
         <div class="flow-label">ADDING TO</div>
-        <div class="flow-arrow">
-          <div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div>
-          <div class="arrow-head">▶</div>
-        </div>
+        <div class="flow-arrow"><div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div><div class="arrow-head">▶</div></div>
         <div class="flow-target">THIS WEEK</div>
         <div style="width:8px;"></div>
-        <div class="flow-arrow">
-          <div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div>
-          <div class="arrow-head">▶</div>
-        </div>
+        <div class="flow-arrow"><div class="flow-line"><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div></div><div class="arrow-head">▶</div></div>
         <div class="flow-target">THIS MONTH</div>
       </div>
 
       <div class="grid-wrapper">
-        <div class="period-box active-box">
-          <div class="period-label">THIS WEEK</div>
-          <div class="period-val" id="bolabet-this-week">0</div>
-          <div class="period-sub">ZMW — resets Sunday</div>
-        </div>
-        <div class="period-box">
-          <div class="period-label">LAST WEEK</div>
-          <div class="period-val" id="bolabet-last-week">0</div>
-          <div class="period-sub">ZMW</div>
-        </div>
-        <div class="box-connector">
-          <div class="connector-label">ON SUNDAY</div>
-          <div style="display:flex;align-items:center;">
-            <div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div>
-            <div class="h-arrow">▶</div>
-          </div>
-        </div>
+        <div class="period-box active-box"><div class="period-label">THIS WEEK</div><div class="period-val" id="bolabet-this-week">0</div><div class="period-sub">ZMW — resets Sunday</div></div>
+        <div class="period-box"><div class="period-label">LAST WEEK</div><div class="period-val" id="bolabet-last-week">0</div><div class="period-sub">ZMW</div></div>
+        <div class="box-connector"><div class="connector-label">ON SUNDAY</div><div style="display:flex;align-items:center;"><div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div><div class="h-arrow">▶</div></div></div>
       </div>
-
       <div class="grid-wrapper">
-        <div class="period-box active-box">
-          <div class="period-label">THIS MONTH</div>
-          <div class="period-val" id="bolabet-this-month">0</div>
-          <div class="period-sub">ZMW — resets on 1st</div>
-        </div>
-        <div class="period-box">
-          <div class="period-label">LAST MONTH</div>
-          <div class="period-val" id="bolabet-last-month">0</div>
-          <div class="period-sub">ZMW</div>
-        </div>
-        <div class="box-connector">
-          <div class="connector-label">ON 1ST</div>
-          <div style="display:flex;align-items:center;">
-            <div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div>
-            <div class="h-arrow">▶</div>
-          </div>
-        </div>
+        <div class="period-box active-box"><div class="period-label">THIS MONTH</div><div class="period-val" id="bolabet-this-month">0</div><div class="period-sub">ZMW — resets on 1st</div></div>
+        <div class="period-box"><div class="period-label">LAST MONTH</div><div class="period-val" id="bolabet-last-month">0</div><div class="period-sub">ZMW</div></div>
+        <div class="box-connector"><div class="connector-label">ON 1ST</div><div style="display:flex;align-items:center;"><div class="h-flow-line"><div class="h-flow-dot"></div><div class="h-flow-dot"></div></div><div class="h-arrow">▶</div></div></div>
       </div>
     </div>
 
     <div class="site-stats-card">
       <div class="site-stat"><div class="site-stat-label">CASHOUTS</div><div class="site-stat-val" id="bolabet-cashouts">0</div></div>
       <div class="site-stat"><div class="site-stat-label">ACTIVE TABS</div><div class="site-stat-val yellow" id="bolabet-tabs">0</div></div>
-      <div class="site-stat"><div class="site-stat-label">AVG / WIN</div><div class="site-stat-val" id="bolabet-avg">0</div></div>
+      <div class="site-stat"><div class="site-stat-label">BIGGEST WIN</div><div class="site-stat-val" id="bolabet-biggest">0</div></div>
     </div>
 
     <div class="alerts-section">
@@ -305,9 +304,48 @@
 
 <script>
   const BOX_SIZE = 30;
+  const MWOS_GOAL = 2000;
+  const BOLABET_GOAL = 900;
   let isLoggedIn = sessionStorage.getItem('aviator_auth') === 'true';
 
+  // Dark mode — remembered in localStorage
+  function applyDark(dark) {
+    document.body.classList.toggle('dark', dark);
+    document.getElementById('dark-btn').textContent = dark ? '☀️' : '🌙';
+  }
+  function toggleDark() {
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', !isDark);
+    applyDark(!isDark);
+  }
+  // Apply saved dark mode on load
+  applyDark(localStorage.getItem('darkMode') === 'true');
+
   function fmt(n) { return Number(n).toLocaleString('en', { minimumFractionDigits: 0 }); }
+
+  function updateGoal(site, today, goal) {
+    const pct = Math.min(100, Math.round((today / goal) * 100));
+    const remain = Math.max(0, goal - today);
+    const reached = today >= goal;
+    const bar = document.getElementById(site + '-goal-bar');
+    const pctEl = document.getElementById(site + '-goal-pct');
+    const remainEl = document.getElementById(site + '-goal-remain');
+    const amountsEl = document.getElementById(site + '-goal-amounts');
+
+    bar.style.width = pct + '%';
+    bar.className = 'goal-bar-fill' + (reached ? ' done' : '');
+    amountsEl.textContent = fmt(today) + ' / ' + fmt(goal) + ' ZMW';
+
+    if (reached) {
+      pctEl.textContent = '✅ GOAL REACHED!';
+      pctEl.className = 'goal-done-text';
+      remainEl.textContent = '+' + fmt(today - goal) + ' ZMW bonus';
+    } else {
+      pctEl.textContent = pct + '%';
+      pctEl.className = 'goal-pct';
+      remainEl.textContent = fmt(remain) + ' ZMW remaining';
+    }
+  }
 
   function showDashboard() {
     document.getElementById('login-screen').style.display = 'none';
@@ -455,8 +493,8 @@
       var mwosToday = mwosCashouts.filter(function(c) { return new Date(c.timestamp).toDateString() === today; });
       var bolabtToday = bolabtCashouts.filter(function(c) { return new Date(c.timestamp).toDateString() === today; });
 
-      var mwosAvg = mwosToday.length > 0 ? Math.round(mwosToday.reduce(function(s,c){return s+c.amount;},0)/mwosToday.length) : 0;
-      var bolabtAvg = bolabtToday.length > 0 ? Math.round(bolabtToday.reduce(function(s,c){return s+c.amount;},0)/bolabtToday.length) : 0;
+      var mwosBiggest = mwosToday.length > 0 ? Math.max.apply(null, mwosToday.map(function(c){return c.amount;})) : 0;
+      var bolabtBiggest = bolabtToday.length > 0 ? Math.max.apply(null, bolabtToday.map(function(c){return c.amount;})) : 0;
 
       var mt = totals.mwos || {};
       var bt = totals.bolabet || {};
@@ -468,7 +506,8 @@
       document.getElementById('mwos-last-month').textContent = fmt(mt.lastMonth || 0);
       document.getElementById('mwos-cashouts').textContent = mwosCashouts.length;
       document.getElementById('mwos-tabs').textContent = mwosTabs.length;
-      document.getElementById('mwos-avg').textContent = fmt(mwosAvg);
+      document.getElementById('mwos-biggest').textContent = fmt(mwosBiggest);
+      updateGoal('mwos', mt.today || 0, MWOS_GOAL);
 
       document.getElementById('bolabet-today').textContent = fmt(bt.today || 0);
       document.getElementById('bolabet-this-week').textContent = fmt(bt.thisWeek || 0);
@@ -477,7 +516,8 @@
       document.getElementById('bolabet-last-month').textContent = fmt(bt.lastMonth || 0);
       document.getElementById('bolabet-cashouts').textContent = bolabtCashouts.length;
       document.getElementById('bolabet-tabs').textContent = bolabtTabs.length;
-      document.getElementById('bolabet-avg').textContent = fmt(bolabtAvg);
+      document.getElementById('bolabet-biggest').textContent = fmt(bolabtBiggest);
+      updateGoal('bolabet', bt.today || 0, BOLABET_GOAL);
 
       renderAlerts(cashouts);
     } catch(e) { console.error(e); }
