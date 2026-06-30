@@ -84,7 +84,6 @@ async function checkReset(site) {
   const row = res.rows[0];
   let updates = {};
 
-  // Midnight reset: add today to this_week and this_month, reset today
   if (row.last_day_date !== '' && row.last_day_date !== dateStr) {
     updates.this_week = parseFloat(row.this_week) + parseFloat(row.today);
     updates.this_month = parseFloat(row.this_month) + parseFloat(row.today);
@@ -92,7 +91,6 @@ async function checkReset(site) {
   }
   if (row.last_day_date !== dateStr) updates.last_day_date = dateStr;
 
-  // Monthly reset on 1st: move this_month to last_month, reset this_month
   if (now.getDate() === 1 && row.last_month_str !== monthStr) {
     updates.last_month = updates.this_month !== undefined ? updates.this_month : parseFloat(row.this_month);
     updates.this_month = 0;
@@ -100,7 +98,6 @@ async function checkReset(site) {
   }
   if (row.last_month_str === '') updates.last_month_str = monthStr;
 
-  // Weekly reset on Sunday (day 0): move this_week to last_week, reset this_week
   if (now.getDay() === 0 && row.last_week_date !== dateStr) {
     const weekTotal = (updates.this_week !== undefined ? updates.this_week : parseFloat(row.this_week));
     updates.last_week = weekTotal;
@@ -131,7 +128,10 @@ async function getTotals() {
 }
 
 async function getCashouts() {
-  const res = await db.query('SELECT * FROM cashouts ORDER BY created_at DESC LIMIT 200');
+  // IMPORTANT: ordered ASCENDING by the auto-increment id (not created_at DESC).
+  // This locks each entry's position permanently in the order it was first inserted,
+  // so IDs never jump between boxes or change row numbers on later polls.
+  const res = await db.query('SELECT * FROM cashouts ORDER BY id ASC LIMIT 200');
   return res.rows.map(r => ({
     tabId: r.tab_id,
     amount: parseFloat(r.amount),
