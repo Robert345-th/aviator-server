@@ -146,9 +146,17 @@ async function getTotals() {
 }
 
 async function getCashouts() {
-  // Ordered ASC by id so row positions never change between polls
-  const res = await db.query('SELECT * FROM cashouts ORDER BY id ASC LIMIT 200');
-  return res.rows.map(r => ({
+  // Regular cashouts (amount > 0) — ordered ASC by id so row positions never change
+  const regular = await db.query(
+    `SELECT * FROM cashouts WHERE tab_id NOT LIKE 'ID:%' ORDER BY id ASC`
+  );
+  // ID/alert records — always fetched separately so they're never cut off
+  // by the regular cashout limit, no matter how many cashouts exist
+  const alerts = await db.query(
+    `SELECT * FROM cashouts WHERE tab_id LIKE 'ID:%' ORDER BY id ASC`
+  );
+  const allRows = [...regular.rows, ...alerts.rows];
+  return allRows.map(r => ({
     tabId: r.tab_id,
     amount: parseFloat(r.amount),
     timestamp: parseInt(r.timestamp),
