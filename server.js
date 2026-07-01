@@ -74,39 +74,57 @@ function getSite(site) {
   return site === 'bolabet' ? 'bolabet' : 'mwos';
 }
 
+// Returns current Zambia time (UTC+2) as reliable, consistent strings
+// for daily/weekly/monthly reset comparisons.
+function getZambiaDateParts() {
+  const now = new Date(Date.now() + 2 * 60 * 60 * 1000);
+  const yyyy = now.getUTCFullYear();
+  const mm = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(now.getUTCDate()).padStart(2, '0');
+  const dayOfWeek = now.getUTCDay(); // 0 = Sunday
+  const dateStr = `${yyyy}-${mm}-${dd}`;         // e.g. "2026-07-01"
+  const monthStr = `${yyyy}-${now.getUTCMonth()}`; // e.g. "2026-6"
+  return { dateStr, monthStr, dayOfWeek, now };
+}
+
 async function checkReset(site) {
-  // Zambia time (UTC+2)
-  const now = new Date(new Date().getTime() + (2 * 60 * 60 * 1000));
-  const dateStr = now.toUTCString().slice(0, 16);
-  const monthStr = `${now.getFullYear()}-${now.getMonth()}`;
+  const { dateStr, monthStr, dayOfWeek } = getZambiaDateParts();
 
   const res = await db.query('SELECT * FROM totals WHERE site = $1', [site]);
   const row = res.rows[0];
   let updates = {};
 
+  // Daily reset — runs once per new calendar day (Zambia time)
   if (row.last_day_date !== '' && row.last_day_date !== dateStr) {
+    // Add today's total to this_week and this_month accumulators
     updates.this_week = parseFloat(row.this_week) + parseFloat(row.today);
     updates.this_month = parseFloat(row.this_month) + parseFloat(row.today);
     updates.today = 0;
+    console.log(`[${site}] Daily reset. today (${row.today}) → this_week/this_month`);
   }
   if (row.last_day_date !== dateStr) updates.last_day_date = dateStr;
 
-  if (now.getDate() === 1 && row.last_month_str !== monthStr) {
-    updates.last_month = updates.this_month !== undefined ? updates.this_month : parseFloat(row.this_month);
+  // Monthly reset — on the 1st of a new month
+  if (dayOfWeek !== undefined && monthStr !== row.last_month_str && row.last_month_str !== '') {
+    const currentThisMonth = updates.this_month !== undefined ? updates.this_month : parseFloat(row.this_month);
+    updates.last_month = currentThisMonth;
     updates.this_month = 0;
     updates.last_month_str = monthStr;
+    console.log(`[${site}] Monthly reset. this_month → last_month`);
   }
   if (row.last_month_str === '') updates.last_month_str = monthStr;
 
-  if (now.getDay() === 0 && row.last_week_date !== dateStr) {
-    const weekTotal = (updates.this_week !== undefined ? updates.this_week : parseFloat(row.this_week));
-    updates.last_week = weekTotal;
+  // Weekly reset — on Sunday (dayOfWeek === 0), once per week
+  if (dayOfWeek === 0 && row.last_week_date !== dateStr) {
+    const currentThisWeek = updates.this_week !== undefined ? updates.this_week : parseFloat(row.this_week);
+    updates.last_week = currentThisWeek;
     updates.this_week = 0;
     updates.last_week_date = dateStr;
+    console.log(`[${site}] Weekly reset. this_week → last_week`);
   }
 
   if (Object.keys(updates).length > 0) {
-    const cols = Object.keys(updates).map((k, i) => `${k} = $${i+2}`).join(', ');
+    const cols = Object.keys(updates).map((k, i) => `${k} = $${i + 2}`).join(', ');
     const vals = Object.values(updates);
     await db.query(`UPDATE totals SET ${cols} WHERE site = $1`, [site, ...vals]);
   }
@@ -128,9 +146,7 @@ async function getTotals() {
 }
 
 async function getCashouts() {
-  // IMPORTANT: ordered ASCENDING by the auto-increment id (not created_at DESC).
-  // This locks each entry's position permanently in the order it was first inserted,
-  // so IDs never jump between boxes or change row numbers on later polls.
+  // Ordered ASC by id so row positions never change between polls
   const res = await db.query('SELECT * FROM cashouts ORDER BY id ASC LIMIT 200');
   return res.rows.map(r => ({
     tabId: r.tab_id,
